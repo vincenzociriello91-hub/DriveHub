@@ -1,3 +1,6 @@
+Versione 3.8.2 (7 novembre 2026)
+• Rapporti più completi: ognuno contiene anche lo stato dell'app in quel momento (permessi, versione di Android Auto, schermo DriveHub già aperto in auto o no, lettore in Android Auto, Shizuku, accessibilità, tipo e stato dell'adattatore OBD, dashcam, quanti viaggi, rifornimenti e scadenze ci sono). Niente indirizzi né posizione.
+
 Versione 3.8.1 (7 novembre 2026)
 • Lo schermo DriveHub ora compare nel menu di Android Auto: Android Auto mostra una sola voce per app e prima sceglieva il lettore "DriveHub Musica". Il lettore è spento di partenza; se lo vuoi lo riaccendi in Altro › Permessi e Android Auto (ma allora lo schermo DriveHub sparisce dal menu).
 • Dopo l'aggiornamento: Impostazioni › App › Android Auto › Forza interruzione, poi in Personalizza menu Avvio app metti la spunta a DriveHub.

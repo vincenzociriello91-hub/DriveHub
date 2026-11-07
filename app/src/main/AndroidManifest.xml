@@ -29,6 +29,7 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
         <package android:name="moe.shizuku.privileged.api" />
+        <package android:name="com.google.android.projection.gearhead" />
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>

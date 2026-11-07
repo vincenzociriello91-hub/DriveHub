@@ -3,11 +3,20 @@ package it.vincenzo.drivehub.core
 import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.ContentValues
+import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import it.vincenzo.drivehub.BuildConfig
+import it.vincenzo.drivehub.features.DashcamService
+import it.vincenzo.drivehub.features.Refuels
+import it.vincenzo.drivehub.features.Trips
+import it.vincenzo.drivehub.media.MusicService
+import it.vincenzo.drivehub.obd.ObdManager
+import it.vincenzo.drivehub.screen.ScreenController
+import it.vincenzo.drivehub.screen.TouchService
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -51,7 +60,49 @@ object Reports {
 
     private fun iso(t: Long) = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ITALY).format(Date(t))
 
-    private fun build(reason: String, error: Throwable? = null, exit: JSONObject? = null): JSONObject = synchronized(events) {
+    /** Fotografia dello stato dell'app al momento del rapporto (senza indirizzi MAC né posizione) */
+    private fun snapshot(): JSONObject {
+        val o = JSONObject()
+        val ctx = app ?: return o
+        fun put(k: String, v: () -> Any?) { runCatching { o.put(k, v() ?: JSONObject.NULL) }.onFailure { o.put(k, "errore: ${it.message}") } }
+        put("permessi") {
+            JSONObject(listOf("ACCESS_FINE_LOCATION", "BLUETOOTH_CONNECT", "BLUETOOTH_SCAN", "READ_MEDIA_AUDIO", "POST_NOTIFICATIONS",
+                "CAMERA", "RECORD_AUDIO").associateWith { ctx.checkSelfPermission("android.permission.$it") == PackageManager.PERMISSION_GRANTED })
+        }
+        put("androidAutoVersione") { ctx.packageManager.getPackageInfo("com.google.android.projection.gearhead", 0).versionName }
+        put("androidAutoSchermoAperto") { Prefs.carSeen(ctx) }
+        put("musicaInAndroidAuto") {
+            ctx.packageManager.getComponentEnabledSetting(ComponentName(ctx, MusicService::class.java)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        }
+        put("shizukuPronto") { ScreenController.shizukuReady() }
+        put("schermoAuto") { ScreenController.status.value }
+        put("accessibilitaAttiva") { TouchService.instance != null }
+        put("passeggero") { ScreenController.passengerMode }
+        put("obdTipo") {
+            when (val d = Prefs.obdDevice(ctx)) {
+                null -> "nessuno"; Prefs.OBD_WIFI -> "wifi"; Prefs.OBD_USB -> "usb"
+                else -> if (d.startsWith(Prefs.OBD_BLE)) "bluetooth LE" else "bluetooth classico"
+            }
+        }
+        put("obdStato") { ObdManager.state.value.status }
+        put("obdCollegato") { ObdManager.state.value.connected }
+        put("dashcam") { DashcamService.running != null }
+        put("velocitaNota") { SpeedMonitor.known() }
+        put("kmAutoImpostati") { Prefs.odometerKm(ctx) > 0 }
+        put("scadenzeImpostate") { Prefs.DEADLINES.count { Prefs.deadline(ctx, it) > 0 } }
+        put("rifornimenti") { Refuels.list(ctx).size }
+        put("viaggi") { Trips.list(ctx).size }
+        put("ultimeAppDisplay") { Prefs.recentApps(ctx).size }
+        return o
+    }
+
+    /** withState = false al recupero dopo una chiusura improvvisa: si è ancora all'avvio e lo stato sarebbe quello nuovo */
+    private fun build(reason: String, error: Throwable? = null, exit: JSONObject? = null, withState: Boolean = true): JSONObject {
+        val state = if (!withState) JSONObject() else runCatching { snapshot() }.getOrElse { JSONObject().put("errore", it.message) }
+        return buildLocked(reason, error, exit, state)
+    }
+
+    private fun buildLocked(reason: String, error: Throwable?, exit: JSONObject?, state: JSONObject): JSONObject = synchronized(events) {
         val ev = JSONArray()
         events.forEach { (t, m) -> ev.put(JSONObject().put("ora", iso(t)).put("msg", m)) }
         val json = JSONObject()
@@ -65,6 +116,7 @@ object Reports {
             .put("fine", iso(events.lastOrNull()?.first?.takeIf { exit != null } ?: System.currentTimeMillis()))
             .put("eventi", ev)
             .put("dati", JSONObject(extras.toMap()))
+            .put("stato", state)
         if (error != null) json.put("errore", error.stackTraceToString())
         if (exit != null) json.put("uscita", exit)
         events.clear()
@@ -142,6 +194,6 @@ object Reports {
                 .put("descrizione", it.description ?: "")
                 .put("ora", iso(it.timestamp))
         } ?: JSONObject().put("motivo", "sconosciuto")
-        save(build("chiusura-improvvisa", exit = info), "chiusura-improvvisa")
+        save(build("chiusura-improvvisa", exit = info, withState = false), "chiusura-improvvisa")
     }
 }
