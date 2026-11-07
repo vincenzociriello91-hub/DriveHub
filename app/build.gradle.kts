@@ -21,9 +21,9 @@ android {
     signingConfigs {
         if (ks != null) create("release") {
             storeFile = ks
-            storePassword = System.getenv("KEYSTORE_PASS")
+            storePassword = System.getenv("KEYSTORE_PASS")?.trim()
             keyAlias = "drivehub"
-            keyPassword = System.getenv("KEYSTORE_PASS")
+            keyPassword = System.getenv("KEYSTORE_PASS")?.trim()
         }
     }
 
