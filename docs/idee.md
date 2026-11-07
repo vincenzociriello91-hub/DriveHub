@@ -27,3 +27,4 @@ schermo in movimento), realizzabile senza chiavi o servizi a pagamento, coerente
 ## Fatte
 - [x] 3.0.0 – schermo diviso, voce, avvisi, viaggi, parcheggio, dashcam, avvio automatico.
 - [x] 3.1.0 – codici errore spiegati e cancellazione, dettatura, pressione lunga.
+- [x] 3.6.0 – app sul telefono a schede (Auto, Diagnosi, Viaggi, Altro) con lista "Prima di partire".

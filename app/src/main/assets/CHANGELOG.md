@@ -1,3 +1,10 @@
+Versione 3.6.0 (7 novembre 2026)
+• App sul telefono riorganizzata in quattro schede in basso: Auto, Diagnosi, Viaggi, Altro. Niente più una sola pagina lunghissima.
+• "Prima di partire": una lista con la spunta su quello che è pronto (permessi, DriveHub in Android Auto, schermo come tablet, adattatore OBD) e un pulsante per sistemare quello che manca. Sparisce quando è tutto pronto.
+• Diagnosi più chiara: cruscotto con valori allineati, codici errore in una scheda a parte, scelta dell'adattatore più in basso.
+• Modalità passeggero con un interruttore ben visibile nella scheda Auto; testi più corti in tutta l'app.
+• Novità: si vede solo l'ultima versione, le altre con "Tutte le versioni".
+
 Versione 3.5.4 (7 novembre 2026)
 • Schermo diviso adattato al display della Fiesta (SYNC 2.5, 8 pollici): le scritte del cruscotto a destra si rimpiccioliscono quanto serve e non si sovrappongono più.
 

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -23,6 +25,7 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.ui.Section
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import it.vincenzo.drivehub.features.DashcamService
@@ -46,7 +49,7 @@ fun TripsSection() {
     val numbers = KeyboardOptions(keyboardType = KeyboardType.Number)
 
     Section("Viaggi e manutenzione", Icons.Default.DateRange) {
-        Text("Il contachilometri cresce da solo con i km dei viaggi. I promemoria partono a 500 km dalla scadenza, a voce e sull'orologio.")
+        Text("I km dei viaggi si aggiungono da soli. Promemoria a 500 km dalla scadenza, a voce e sull'orologio.")
         OutlinedTextField(odo, { odo = it.filter(Char::isDigit) }, label = { Text("Km attuali dell'auto") }, keyboardOptions = numbers)
         OutlinedTextField(service, { service = it.filter(Char::isDigit) }, label = { Text("Prossimo tagliando a km") }, keyboardOptions = numbers)
         OutlinedTextField(tyres, { tyres = it.filter(Char::isDigit) }, label = { Text("Prossimo cambio gomme a km") }, keyboardOptions = numbers)
@@ -95,10 +98,11 @@ fun DashcamSection() {
     val running = remember(tick) { DashcamService.running != null }
 
     Section("Dashcam e avvio automatico", Icons.Default.PlayArrow) {
+        Text(if (running) "In registrazione" else "Spenta", style = MaterialTheme.typography.titleMedium)
         Text(
-            "La dashcam usa la fotocamera posteriore del Pixel sul supporto: registra a ciclo gli ultimi 5 minuti, senza audio. " +
-                "A una frenata brusca o un urto, o con il pulsante sul display, salva la clip in Movies/DriveHub. " +
-                "Se pubblichi un video, attenzione a targhe e persone riconoscibili."
+            "Fotocamera posteriore del Pixel sul supporto: tiene gli ultimi 5 minuti, senza audio. Con frenata brusca, urto o pulsante " +
+                "sul display salva la clip in Movies/DriveHub. Se pubblichi un video, attenzione a targhe e volti.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Switch(autoCam, { autoCam = it; Prefs.setAutoDashcam(ctx, it) })
@@ -110,8 +114,21 @@ fun DashcamSection() {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { DashcamService.start(ctx); tick++ }, enabled = !running) { Text("Avvia dashcam") }
-            OutlinedButton(onClick = { DashcamService.stop(ctx); tick++ }) { Text("Ferma") }
+            OutlinedButton(onClick = { DashcamService.stop(ctx); tick++ }, enabled = running) { Text("Ferma") }
         }
-        Text(if (running) "Dashcam in registrazione" else "Dashcam spenta")
+    }
+}
+
+@Composable
+fun FuelSection() {
+    val ctx = LocalContext.current
+    var fuel by remember { mutableStateOf(Prefs.fuel(ctx)) }
+    Section("Carburante", Icons.Default.LocationOn) {
+        Text("Per i prezzi dei distributori vicini sul display dell'auto.")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("Benzina", "Gasolio", "GPL", "Metano").forEach { f ->
+                FilterChip(selected = fuel == f, onClick = { fuel = f; Prefs.setFuel(ctx, f) }, label = { Text(f) })
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@ class DriveHubSession : Session() {
         lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onCreate(owner: LifecycleOwner) {
                 Reports.log("Android Auto: sessione aperta")
+                Prefs.setCarSeen(carContext)
                 ObdManager.start(carContext)
                 SpeedMonitor.start(carContext)
                 ScreenController.startSession(carContext)

@@ -53,4 +53,8 @@ object Prefs {
     fun setAutoMusic(ctx: Context, v: Boolean) = sp(ctx).edit().putBoolean("auto_music", v).apply()
     fun autoDashcam(ctx: Context): Boolean = sp(ctx).getBoolean("auto_dashcam", false)
     fun setAutoDashcam(ctx: Context, v: Boolean) = sp(ctx).edit().putBoolean("auto_dashcam", v).apply()
+
+    // vero dopo la prima volta che lo schermo DriveHub si è aperto in Android Auto (lista di avvio nell'app)
+    fun carSeen(ctx: Context): Boolean = sp(ctx).getBoolean("car_seen", false)
+    fun setCarSeen(ctx: Context) = sp(ctx).edit().putBoolean("car_seen", true).apply()
 }
