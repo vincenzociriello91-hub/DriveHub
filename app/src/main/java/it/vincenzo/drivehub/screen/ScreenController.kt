@@ -648,6 +648,8 @@ object ScreenController {
         app?.let { ctx -> Prefs.lastFuelPrice(ctx)?.let { rows += "Carburante" to "€ ${String.format(Locale.ITALY, "%.3f", it)}" } }
         val value = Paint(title).apply { textSize = u * 5.8f; textAlign = Paint.Align.RIGHT }
         body.textSize = u * 5.2f
+        val k = ScreenMath.fitScale(rows.maxOf { (l, t) -> body.measureText(l) + value.measureText(t) } + u * 3, right - left)
+        body.textSize *= k; value.textSize *= k
         var y = sy + u * 6
         for ((label, text) in rows) {
             y += u * 8.6f

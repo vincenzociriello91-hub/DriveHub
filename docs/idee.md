@@ -19,6 +19,10 @@ schermo in movimento), realizzabile senza chiavi o servizi a pagamento, coerente
 - [ ] Tastiera semplice sul display dell'auto, solo a veicolo fermo, in aggiunta alla dettatura.
 - [ ] Riquadro (tile) sul Pixel Watch con consumo del viaggio e prossimo distributore.
 - [ ] Ultime app usate in cima al launcher dell'auto.
+- [ ] Dati dell'auto dai server Ford (posizione, carburante, chilometri anche ad auto spenta) tramite l'app Ford:
+      sperimentale, le API non sono ufficiali; solo con accesso dell'utente nell'app, mai credenziali nel codice.
+- [ ] Verifica con gli adattatori Android Auto senza fili (AAWireless, Motorola MA1 e simili) sul SYNC 2.5,
+      che di suo accetta solo il cavo.
 
 ## Fatte
 - [x] 3.0.0 – schermo diviso, voce, avvisi, viaggi, parcheggio, dashcam, avvio automatico.

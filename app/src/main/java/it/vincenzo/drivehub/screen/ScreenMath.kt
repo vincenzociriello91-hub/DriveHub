@@ -20,4 +20,10 @@ object ScreenMath {
         val py = (y - oy) / s
         return if (px in 0f..pw.toFloat() && py in 0f..ph.toFloat()) px to py else null
     }
+
+    /**
+     * Fattore (al massimo 1) che fa stare la riga più larga del cruscotto nello spazio disponibile:
+     * sugli schermi stretti come il SYNC 2.5 della Fiesta (800x480) il testo si rimpicciolisce invece di sovrapporsi.
+     */
+    fun fitScale(widest: Float, available: Float) = if (widest <= 0f) 1f else minOf(1f, available / widest)
 }

@@ -17,6 +17,12 @@ class ScreenTest {
 
     @Test fun bandaNeraSpecchio() = assertNull(ScreenMath.mirrorToPhone(10f, 240f, 800, 480, 1080, 2400))
 
+    @Test fun cruscottoSuSchermoStretto() {
+        assertEquals(1f, ScreenMath.fitScale(200f, 249f), 0.001f)   // ci sta: nessun rimpicciolimento
+        assertEquals(0.75f, ScreenMath.fitScale(332f, 249f), 0.001f) // SYNC 2.5: riga troppo larga
+        assertEquals(1f, ScreenMath.fitScale(0f, 249f), 0.001f)
+    }
+
     @Test fun regolaBlocco() {
         // fermo: mai bloccato
         assertFalse(ScreenMath.blocked(false, true, false, false, true))

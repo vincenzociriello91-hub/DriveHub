@@ -1,3 +1,6 @@
+Versione 3.5.4 (7 novembre 2026)
+• Schermo diviso adattato al display della Fiesta (SYNC 2.5, 8 pollici): le scritte del cruscotto a destra si rimpiccioliscono quanto serve e non si sovrappongono più.
+
 Versione 3.5.3 (7 novembre 2026)
 • OBD Wi-Fi: la connessione passa sempre dalla rete dell'adattatore e non più dai dati mobili; se il telefono non è collegato a quella rete, DriveHub lo dice chiaramente.
 
