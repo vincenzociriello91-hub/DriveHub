@@ -8,7 +8,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,8 +25,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +40,32 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.Updater
 import it.vincenzo.drivehub.obd.ObdManager
+import it.vincenzo.drivehub.ui.DriveHubTheme
+import it.vincenzo.drivehub.ui.Section
+import it.vincenzo.drivehub.ui.StatusChip
+import it.vincenzo.drivehub.features.DashcamService
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
 import it.vincenzo.drivehub.obd.DtcInfo
 import it.vincenzo.drivehub.core.SpeedMonitor
 import it.vincenzo.drivehub.screen.MirrorService
@@ -67,8 +89,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Reports.log("Telefono: app aperta")
         setContent {
-            val scheme = if (isSystemInDarkTheme()) dynamicDarkColorScheme(this) else dynamicLightColorScheme(this)
-            MaterialTheme(colorScheme = scheme) { Surface(Modifier.fillMaxSize()) { Home() } }
+            DriveHubTheme { Surface(Modifier.fillMaxSize()) { Home() } }
         }
     }
 
@@ -81,12 +102,33 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** Intestazione: icona, nome, versione e stato di tutto quello che serve in auto */
 @Composable
-internal fun Section(title: String, content: @Composable () -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            content()
+private fun Header(obdConnected: Boolean) {
+    var tick by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) { while (true) { delay(2000); tick++ } }
+    val shizuku = remember(tick) { ScreenController.shizukuReady() }
+    val dashcam = remember(tick) { DashcamService.running != null }
+    val passenger = remember(tick) { ScreenController.passengerMode }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(56.dp).clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(Color(0xFF4F8CFF), Color(0xFF0B57D0)))),
+                contentAlignment = Alignment.Center,
+            ) { Image(painterResource(R.drawable.ic_launcher_fg), contentDescription = null, modifier = Modifier.size(56.dp)) }
+            Box(Modifier.size(14.dp))
+            Column {
+                Text("DriveHub", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text("Versione ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatusChip(if (shizuku) "Shizuku pronto" else "Shizuku spento", shizuku)
+            StatusChip(if (obdConnected) "OBD collegato" else "OBD scollegato", obdConnected)
+            StatusChip(if (dashcam) "Dashcam attiva" else "Dashcam spenta", dashcam)
+            if (passenger) StatusChip("Passeggero", true)
         }
     }
 }
@@ -117,12 +159,12 @@ private fun Home() {
     }
 
     Column(
-        Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("DriveHub ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.headlineMedium)
+        Header(obd.connected)
 
-        Section("1. Permessi") {
+        Section("1. Permessi", Icons.Default.Lock) {
             Text("Posizione (carburante, meteo, viaggi, parcheggio), Bluetooth (OBD), audio (musica), notifiche (avvisi anche sul Pixel Watch), fotocamera (dashcam), microfono (comandi vocali).")
             Button(onClick = {
                 permissions.launch(arrayOf(
@@ -133,7 +175,7 @@ private fun Home() {
             }) { Text("Concedi i permessi") }
         }
 
-        Section("2. Attiva DriveHub in Android Auto") {
+        Section("2. Attiva DriveHub in Android Auto", Icons.Default.Settings) {
             Text(
                 "Impostazioni → App connesse → Android Auto → tocca 10 volte \"Versione\" per diventare sviluppatore. " +
                     "Poi menu ⋮ → Impostazioni sviluppatore → attiva \"Origini sconosciute\". " +
@@ -143,7 +185,7 @@ private fun Home() {
 
         ScreenSection()
 
-        Section("4. Adattatore OBD") {
+        Section("4. Adattatore OBD", Icons.Default.Build) {
             val options = listOf("Wi-Fi (192.168.0.10:35000)" to Prefs.OBD_WIFI) + paired
             if (paired.isEmpty()) Text("Nessun dispositivo Bluetooth associato: associa l'ELM327 dalle impostazioni Bluetooth, poi concedi i permessi.")
             options.forEach { (name, addr) ->
@@ -175,7 +217,7 @@ private fun Home() {
             }
         }
 
-        Section("5. Carburante per la ricerca prezzi") {
+        Section("5. Carburante per la ricerca prezzi", Icons.Default.LocationOn) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Benzina", "Gasolio", "GPL", "Metano").forEach { f ->
                     FilterChip(selected = fuel == f, onClick = { fuel = f; Prefs.setFuel(ctx, f) }, label = { Text(f) })
@@ -187,7 +229,7 @@ private fun Home() {
         ParkingSection()
         DashcamSection()
 
-        Section("Aggiornamenti") {
+        Section("Aggiornamenti", Icons.Default.Refresh) {
             Button(onClick = {
                 updateMsg = "Controllo…"
                 scope.launch {
@@ -201,13 +243,13 @@ private fun Home() {
             if (updateMsg.isNotEmpty()) Text(updateMsg)
         }
 
-        Section("Rapporti") {
+        Section("Rapporti", Icons.Default.Info) {
             Text("Salvati in automatico dopo ogni operazione, a ogni errore e alla chiusura, nella cartella Download/${Reports.FOLDER}. Sincronizzala su Google Drive per farli leggere a Claude.")
             OutlinedButton(onClick = { Reports.flush("manuale"); saved = "Rapporto salvato" }) { Text("Salva rapporto ora") }
             if (saved.isNotEmpty()) Text(saved)
         }
 
-        Section("Novità") {
+        Section("Novità", Icons.Default.Star) {
             Text(remember { ctx.assets.open("CHANGELOG.md").bufferedReader().use { it.readText() } })
         }
     }
@@ -297,7 +339,7 @@ private fun ScreenSection() {
         } else Reports.log("Specchio: consenso negato")
     }
 
-    Section("3. Schermo dell'auto come tablet") {
+    Section("3. Schermo dell'auto come tablet", Icons.Default.Home) {
         Text(
             "Con Shizuku il display dell'auto ha le sue app, indipendenti dal telefono. " +
                 "Prima volta: installa Shizuku, aprilo, attiva \"Debug wireless\" nelle Opzioni sviluppatore e segui l'abbinamento. " +

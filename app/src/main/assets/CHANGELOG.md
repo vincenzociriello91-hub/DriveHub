@@ -1,3 +1,9 @@
+Versione 3.3.0 (7 novembre 2026)
+• Grafica nuova in stile Google Pixel nell'app: colori presi dallo sfondo del telefono, schede arrotondate con icone, stato di Shizuku, OBD, dashcam e passeggero in cima.
+• Launcher sul display dell'auto rinnovato: barra con ora, data e velocità, app in riquadri grandi e facili da toccare, sfondo scuro che non abbaglia.
+• Schermate di blocco e di attesa più chiare, cruscotto dello schermo diviso con la velocità in grande.
+• Icona nuova con sfumatura blu.
+
 Versione 3.2.0 (7 novembre 2026)
 • Solo audio in movimento: video e app restano attivi con l'immagine coperta, l'audio continua; comandi a voce "pausa", "prossima", "indietro".
 • Modalità passeggero: in Strumenti › Passeggero (o nell'app sul telefono) chi siede accanto sblocca in movimento le app che non sono video o giochi: browser, messaggi, ricerche, tastiera e tocchi. Video e giochi restano coperti; si spegne da sola a fine viaggio.

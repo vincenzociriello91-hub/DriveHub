@@ -20,6 +20,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import it.vincenzo.drivehub.core.Prefs
+import it.vincenzo.drivehub.ui.Section
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.PlayArrow
 import it.vincenzo.drivehub.features.DashcamService
 import it.vincenzo.drivehub.features.Parking
 import it.vincenzo.drivehub.features.Trips
@@ -40,7 +45,7 @@ fun TripsSection() {
     val trips = remember { Trips.list(ctx).take(10) }
     val numbers = KeyboardOptions(keyboardType = KeyboardType.Number)
 
-    Section("Viaggi e manutenzione") {
+    Section("Viaggi e manutenzione", Icons.Default.DateRange) {
         Text("Il contachilometri cresce da solo con i km dei viaggi. I promemoria partono a 500 km dalla scadenza, a voce e sull'orologio.")
         OutlinedTextField(odo, { odo = it.filter(Char::isDigit) }, label = { Text("Km attuali dell'auto") }, keyboardOptions = numbers)
         OutlinedTextField(service, { service = it.filter(Char::isDigit) }, label = { Text("Prossimo tagliando a km") }, keyboardOptions = numbers)
@@ -65,7 +70,7 @@ fun ParkingSection() {
     val spot = remember(tick) { Prefs.parking(ctx) }
     val end = remember(tick) { Prefs.parkingEnd(ctx) }
 
-    Section("Parcheggio") {
+    Section("Parcheggio", Icons.Default.Place) {
         Text(spot?.let { "Auto lasciata il ${date(it.time)}" } ?: "Nessuna posizione salvata: si salva da sola quando scolleghi il telefono dall'auto.")
         if (end > 0) Text("Sosta fino alle ${date(end, "HH:mm")}")
         if (spot != null) {
@@ -89,7 +94,7 @@ fun DashcamSection() {
     var tick by remember { mutableStateOf(0) }
     val running = remember(tick) { DashcamService.running != null }
 
-    Section("Dashcam e avvio automatico") {
+    Section("Dashcam e avvio automatico", Icons.Default.PlayArrow) {
         Text(
             "La dashcam usa la fotocamera posteriore del Pixel sul supporto: registra a ciclo gli ultimi 5 minuti, senza audio. " +
                 "A una frenata brusca o un urto, o con il pulsante sul display, salva la clip in Movies/DriveHub. " +

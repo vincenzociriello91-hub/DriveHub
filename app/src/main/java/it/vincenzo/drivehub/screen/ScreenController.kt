@@ -531,74 +531,129 @@ object ScreenController {
             val c = try { s.lockHardwareCanvas() } catch (_: Exception) { return }
             try {
                 val bmp = bitmap
-                val msg = when {
-                    mode == Mode.NONE -> "DriveHub\n\nApri DriveHub sul telefono e avvia Shizuku\noppure lo specchio dello schermo"
+                // prima riga = titolo, il resto = spiegazione
+                val msg: Triple<String, String, Int>? = when {
+                    mode == Mode.NONE -> Triple("DriveHub", "Apri DriveHub sul telefono e avvia Shizuku\noppure lo specchio dello schermo", ACCENT)
                     blocked() -> if (SpeedMonitor.known())
-                        "Veicolo in movimento\n\nImmagine coperta, l'audio continua.\nA voce: pausa, prossima, indietro."
-                    else "In attesa della velocità\n\nServono GPS o adattatore OBD\nper sbloccare lo schermo."
+                        Triple("Veicolo in movimento", "Immagine coperta, l'audio continua.\nA voce: pausa, prossima, indietro.", WARN)
+                    else Triple("In attesa della velocità", "Servono GPS o adattatore OBD\nper sbloccare lo schermo.", WARN)
                     else -> null
                 }
                 val pane = Rect(0, 0, paneW(), surfH)
-                c.drawColor(Color.BLACK)
-                if (msg == null && bmp != null) c.drawBitmap(bmp, null, pane, filter)
-                else if (msg != null) drawMessage(c, msg, pane)
-                if (split) drawPanel(c, Rect(pane.right, 0, surfW, surfH))
-                if (passengerMode) {
-                    badgePaint.textSize = surfH / 24f
-                    c.drawText("Modalità passeggero", surfH / 40f, surfH - surfH / 40f, badgePaint)
+                if (msg == null && bmp != null) {
+                    c.drawColor(Color.BLACK)
+                    c.drawBitmap(bmp, null, pane, filter)
+                } else {
+                    drawBackground(c, pane)
+                    if (msg != null) drawMessage(c, msg.first, msg.second, msg.third, pane)
                 }
+                if (split) drawPanel(c, Rect(pane.right, 0, surfW, surfH))
+                if (passengerMode) drawBadge(c, "Modalità passeggero", WARN)
             } finally {
                 s.unlockCanvasAndPost(c)
             }
         }
     }
 
-    private val badgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 193, 7) }
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textAlign = Paint.Align.CENTER }
+    // Palette del display dell'auto (uguale al launcher): sempre scura per non abbagliare di notte
+    private val BG_TOP = Color.rgb(11, 18, 32)
+    private val BG_BOTTOM = Color.rgb(19, 28, 46)
+    private val CARD = Color.rgb(27, 37, 55)
+    private val TEXT = Color.rgb(241, 244, 249)
+    private val MUTED = Color.rgb(154, 166, 186)
+    private val ACCENT = Color.rgb(138, 180, 248)
+    private val WARN = Color.rgb(255, 193, 7)
+
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val title = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = TEXT; isFakeBoldText = true }
+    private val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = MUTED }
 
     private fun paneW() = if (split) (surfW * SPLIT).toInt().coerceAtLeast(1) else surfW
 
-    private fun drawMessage(c: android.graphics.Canvas, msg: String, r: Rect) {
-        textPaint.textSize = r.height() / 14f
-        val lines = msg.lines()
-        val step = textPaint.textSize * 1.4f
-        var y = r.exactCenterY() - step * (lines.size - 1) / 2
+    private fun drawBackground(c: android.graphics.Canvas, r: Rect) {
+        fill.shader = android.graphics.LinearGradient(0f, r.top.toFloat(), 0f, r.bottom.toFloat(), BG_TOP, BG_BOTTOM,
+            android.graphics.Shader.TileMode.CLAMP)
+        c.drawRect(r, fill)
+        fill.shader = null
+    }
+
+    /** Scheda arrotondata al centro con barra colorata a sinistra, titolo e testo */
+    private fun drawMessage(c: android.graphics.Canvas, head: String, text: String, accent: Int, r: Rect) {
+        val u = r.height() / 100f
+        title.textSize = u * 8
+        body.textSize = u * 5.2f
+        val lines = text.lines()
+        val w = (r.width() * 0.82f).coerceAtMost(u * 170)
+        val h = u * 14 + title.textSize + lines.size * body.textSize * 1.45f
+        val card = android.graphics.RectF(r.exactCenterX() - w / 2, r.exactCenterY() - h / 2, r.exactCenterX() + w / 2, r.exactCenterY() + h / 2)
+        fill.color = CARD
+        c.drawRoundRect(card, u * 6, u * 6, fill)
+        fill.color = accent
+        c.drawRoundRect(android.graphics.RectF(card.left, card.top, card.left + u * 1.6f, card.bottom), u, u, fill)
+        val x = card.left + u * 7
+        var y = card.top + u * 6 + title.textSize
+        c.drawText(head, x, y, title)
+        y += u * 3
         for (line in lines) {
-            c.drawText(line, r.exactCenterX(), y, textPaint)
-            y += step
+            y += body.textSize * 1.45f
+            c.drawText(line, x, y, body)
         }
     }
 
-    private val panelBg = Paint().apply { color = Color.rgb(18, 22, 30) }
-    private val panelBig = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; isFakeBoldText = true }
-    private val panelText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(190, 200, 215) }
+    /** Pastiglia in basso a sinistra (es. modalità passeggero) */
+    private fun drawBadge(c: android.graphics.Canvas, text: String, color: Int) {
+        val u = surfH / 100f
+        body.textSize = u * 4.5f
+        val w = body.measureText(text) + u * 6
+        val box = android.graphics.RectF(u * 2.5f, surfH - u * 11, u * 2.5f + w, surfH - u * 3)
+        fill.color = Color.argb(60, Color.red(color), Color.green(color), Color.blue(color))
+        c.drawRoundRect(box, box.height() / 2, box.height() / 2, fill)
+        body.color = color
+        c.drawText(text, box.left + u * 3, box.bottom - u * 2.6f, body)
+        body.color = MUTED
+    }
 
     private fun f(v: Double?, d: Int = 0) = v?.let { String.format(Locale.ITALY, "%.${d}f", it) } ?: "—"
 
     /** Cruscotto a destra con lo schermo diviso: sempre visibile, anche in movimento */
     private fun drawPanel(c: android.graphics.Canvas, r: Rect) {
-        c.drawRect(r, panelBg)
+        drawBackground(c, r)
+        fill.color = Color.argb(40, 255, 255, 255)
+        c.drawRect(r.left.toFloat(), r.top.toFloat(), r.left + 2f, r.bottom.toFloat(), fill)
         val v = ObdManager.state.value.values
-        val x = r.left + r.width() * 0.08f
-        val unit = r.height() / 100f
-        panelBig.textSize = unit * 14
-        panelText.textSize = unit * 7
-        var y = r.top + unit * 16
-        c.drawText(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date()), x, y, panelBig)
-        y += unit * 17
-        c.drawText("${f(SpeedMonitor.kmh)} km/h", x, y, panelBig)
-        val lines = listOf(
-            "${f(v["0C"])} giri/min",
-            "Consumo ${f(v["L100"], 1)} l/100",
-            "Media ${f(TripRecorder.avgL100(), 1)} l/100",
-            "Motore ${f(v["05"])}°C · ${f(v["V"], 1)} V",
-            "Viaggio ${f(TripRecorder.km(), 1)} km",
-        ) + (app?.let { ctx -> Prefs.lastFuelPrice(ctx)?.let { "€ ${String.format(Locale.ITALY, "%.3f", it)} ${Prefs.lastFuelName(ctx)}" } }
-            ?.let { listOf(it) } ?: emptyList())
-        y += unit * 4
-        for (line in lines) {
-            y += unit * 10
-            c.drawText(line, x, y, panelText)
+        val u = r.height() / 100f
+        val left = r.left + r.width() * 0.09f
+        val right = r.right - r.width() * 0.09f
+
+        body.textSize = u * 5.5f
+        c.drawText(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date()), left, r.top + u * 10, body)
+
+        // velocità grande con l'unità accanto
+        title.textSize = u * 22
+        val speed = f(if (SpeedMonitor.known()) SpeedMonitor.kmh else null)
+        val sy = r.top + u * 33
+        c.drawText(speed, left, sy, title)
+        body.color = ACCENT
+        c.drawText("km/h", left + title.measureText(speed) + u * 2, sy, body)
+        body.color = MUTED
+
+        val rows = mutableListOf(
+            "Giri" to "${f(v["0C"])} /min",
+            "Consumo" to "${f(v["L100"], 1)} l/100",
+            "Media viaggio" to "${f(TripRecorder.avgL100(), 1)} l/100",
+            "Motore" to "${f(v["05"])} °C",
+            "Batteria" to "${f(v["V"], 1)} V",
+            "Viaggio" to "${f(TripRecorder.km(), 1)} km",
+        )
+        app?.let { ctx -> Prefs.lastFuelPrice(ctx)?.let { rows += "Carburante" to "€ ${String.format(Locale.ITALY, "%.3f", it)}" } }
+        val value = Paint(title).apply { textSize = u * 5.8f; textAlign = Paint.Align.RIGHT }
+        body.textSize = u * 5.2f
+        var y = sy + u * 6
+        for ((label, text) in rows) {
+            y += u * 8.6f
+            if (y > r.bottom - u * 3) break
+            c.drawText(label, left, y, body)
+            c.drawText(text, right, y, value)
         }
     }
 }
