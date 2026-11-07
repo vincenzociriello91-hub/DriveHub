@@ -19,8 +19,11 @@ Vincenzo le ha chieste il 07/11/2026: non serve chiedergli conferma per pubblica
 ## Cosa puoi fare da solo
 - Correggere errori, crash, schermate che non funzionano, testi poco chiari, partendo quando si può da una prova
   in `app/src/test` che riproduce il problema.
-- Domenica: revisione completa, aggiornamento cauto delle librerie (una alla volta, build verde), funzioni nuove
-  decise da te se servono davvero a chi guida.
+- Domenica: revisione completa, aggiornamento cauto delle librerie (una alla volta, build verde).
+- **Nuove funzioni in autonomia (domenica e mercoledì)**: Vincenzo ha chiesto il 07/11/2026 che l'app cresca da sola,
+  senza che lui debba chiedere cosa manca. In queste sessioni costruisci almeno una funzione nuova, scelta da
+  `docs/idee.md` o pensata da te; aggiorna il file (sposta in "Fatte", aggiungi idee nuove). Prima le correzioni
+  dei rapporti, poi le funzioni. Ogni funzione nuova va nel CHANGELOG spiegata in parole semplici.
 - Manutenzione serale: solo correzioni e revisioni leggere, niente funzioni nuove né librerie.
 
 ## Cosa non puoi fare
