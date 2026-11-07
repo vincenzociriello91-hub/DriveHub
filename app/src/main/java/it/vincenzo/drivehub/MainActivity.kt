@@ -326,6 +326,11 @@ private fun ScreenSection() {
             OutlinedButton(onClick = { ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) { Text("Accessibilità") }
         }
         Text("Display auto: $screen")
-        Text("Sicurezza: sopra i 5 km/h video e app si coprono; restano navigatori e musica.")
+        Text("Sicurezza: sopra i 5 km/h l'immagine di video e app si copre (l'audio continua); restano navigatori e musica.")
+        var passenger by remember { mutableStateOf(ScreenController.passengerMode) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.Switch(passenger, { passenger = it; ScreenController.setPassenger(it) })
+            Text("  Modalità passeggero: in movimento sblocca le app che non sono video o giochi. Usala solo se lo schermo lo usa il passeggero; si spegne a fine viaggio.")
+        }
     }
 }

@@ -2,6 +2,13 @@ package it.vincenzo.drivehub.screen
 
 object ScreenMath {
     /**
+     * Regola del blocco in movimento (testata): navigatori e musica sempre ammessi;
+     * in modalità passeggero anche le altre app, ma mai video e giochi.
+     */
+    fun blocked(moving: Boolean, shizuku: Boolean, essential: Boolean, passenger: Boolean, videoOrGame: Boolean) =
+        moving && !(shizuku && (essential || (passenger && !videoOrGame)))
+
+    /**
      * Nello specchio il telefono è rimpicciolito e centrato (con bande nere) nel display dell'auto:
      * converte un punto del display (dw x dh) nel punto del telefono (pw x ph); null se cade sulle bande.
      */

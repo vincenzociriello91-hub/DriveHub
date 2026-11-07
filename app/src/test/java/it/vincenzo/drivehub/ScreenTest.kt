@@ -17,6 +17,19 @@ class ScreenTest {
 
     @Test fun bandaNeraSpecchio() = assertNull(ScreenMath.mirrorToPhone(10f, 240f, 800, 480, 1080, 2400))
 
+    @Test fun regolaBlocco() {
+        // fermo: mai bloccato
+        assertFalse(ScreenMath.blocked(false, true, false, false, true))
+        // in movimento: navigatore/musica ammessi, il resto coperto
+        assertFalse(ScreenMath.blocked(true, true, true, false, false))
+        assertTrue(ScreenMath.blocked(true, true, false, false, false))
+        // passeggero: sblocca le app normali ma mai video e giochi
+        assertFalse(ScreenMath.blocked(true, true, false, true, false))
+        assertTrue(ScreenMath.blocked(true, true, false, true, true))
+        // specchio: in movimento sempre coperto
+        assertTrue(ScreenMath.blocked(true, false, true, true, false))
+    }
+
     @Test fun isteresiVelocita() {
         val g = SpeedGate()
         g.update(4.0); assertFalse(g.moving)

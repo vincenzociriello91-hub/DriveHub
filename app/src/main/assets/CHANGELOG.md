@@ -1,3 +1,7 @@
+Versione 3.2.0 (7 novembre 2026)
+• Solo audio in movimento: video e app restano attivi con l'immagine coperta, l'audio continua; comandi a voce "pausa", "prossima", "indietro".
+• Modalità passeggero: in Strumenti › Passeggero (o nell'app sul telefono) chi siede accanto sblocca in movimento le app che non sono video o giochi: browser, messaggi, ricerche, tastiera e tocchi. Video e giochi restano coperti; si spegne da sola a fine viaggio.
+
 Versione 3.1.0 (7 novembre 2026)
 • Codici errore spiegati in italiano: sul display, a voce, negli avvisi e nell'app.
 • Cancellazione dei codici errore dall'app sul telefono, con conferma e solo a veicolo fermo.

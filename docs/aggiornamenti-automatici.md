@@ -28,6 +28,8 @@ Vincenzo le ha chieste il 07/11/2026: non serve chiedergli conferma per pubblica
 
 ## Cosa non puoi fare
 - Indebolire il blocco di sicurezza in movimento (soglie, app ammesse, "velocità sconosciuta = bloccato").
+  La modalità passeggero (07/11/2026) è l'unica eccezione: non deve mai sbloccare video o giochi in movimento,
+  non deve restare attiva oltre la fine del viaggio e si attiva solo con conferma esplicita.
 - Mettere token, chiavi o password nel codice (l'APK è pubblico): i rapporti restano locali.
 - Mandare all'auto comandi OBD diversi dalla lettura standard e dalla cancellazione dei codici confermata dall'utente.
 - Toccare segreti, chiave di firma, visibilità del repository; aggiungere pubblicità o tracciamento.

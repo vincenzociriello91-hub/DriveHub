@@ -55,6 +55,13 @@ object ScreenController {
     private const val LONG_MS = 800L
 
     /** App che restano utilizzabili in movimento (oltre a quelle di categoria Mappe e Audio) */
+    /** App video o di gioco note (oltre alle categorie Video e Giochi): in movimento sempre coperte */
+    private val VIDEO_APPS = setOf(
+        "com.google.android.youtube", "com.netflix.mediaclient", "com.amazon.avod.thirdpartyclient",
+        "com.disney.disneyplus", "com.zhiliaoapp.musically", "com.instagram.android", "tv.twitch.android.app",
+        "com.google.android.apps.youtube.kids",
+    )
+
     private val ALLOWED_MOVING = setOf(
         "com.google.android.apps.maps", "com.waze", "com.spotify.music",
         "com.google.android.apps.youtube.music", "deezer.android.app", "com.amazon.mp3", "com.apple.android.music",
@@ -104,6 +111,19 @@ object ScreenController {
     /** Il prossimo tocco diventa una pressione lunga (Android Auto non la invia) */
     @Volatile private var longPressNext = false
 
+    /**
+     * Modalità passeggero: in movimento sblocca le app che non sono video o giochi (tocchi, tastiera, dettatura).
+     * Si attiva solo con conferma esplicita e si spegne alla fine di ogni viaggio.
+     */
+    @Volatile var passengerMode = false
+        private set
+
+    fun setPassenger(on: Boolean) {
+        passengerMode = on
+        Reports.log(if (on) "Modalità passeggero attivata (confermata)" else "Modalità passeggero spenta")
+        h.post { lastBlocked = null; tick.run() }
+    }
+
     // ---------- chiamate dall'esterno (qualsiasi thread) ----------
 
     fun startSession(ctx: Context) {
@@ -135,6 +155,7 @@ object ScreenController {
             reader?.close(); reader = null
             mode = Mode.NONE
             split = false
+            passengerMode = false // a fine viaggio la modalità passeggero si spegne sempre
             topPackage = null
             lastBlocked = null
             status.value = "Schermo dell'auto non collegato"
@@ -476,8 +497,22 @@ object ScreenController {
         return cat == ApplicationInfo.CATEGORY_MAPS || cat == ApplicationInfo.CATEGORY_AUDIO
     }
 
+    private fun videoOrGame(pkg: String?): Boolean {
+        val ctx = app ?: return true
+        if (pkg == null || pkg == ctx.packageName) return false
+        if (pkg in VIDEO_APPS) return true
+        val cat = try { ctx.packageManager.getApplicationInfo(pkg, 0).category } catch (_: Exception) { return true }
+        return cat == ApplicationInfo.CATEGORY_VIDEO || cat == ApplicationInfo.CATEGORY_GAME
+    }
+
     /** Nello specchio non si sa quale app è aperta: in movimento si blocca sempre */
-    private fun blocked() = SpeedMonitor.moving() && !(mode == Mode.SHIZUKU && allowed(topPackage))
+    private fun blocked() = ScreenMath.blocked(
+        moving = SpeedMonitor.moving(),
+        shizuku = mode == Mode.SHIZUKU,
+        essential = allowed(topPackage),
+        passenger = passengerMode,
+        videoOrGame = videoOrGame(topPackage),
+    )
 
     private fun blockReason() = if (SpeedMonitor.known()) "veicolo in movimento" else "velocità sconosciuta"
 
@@ -499,7 +534,7 @@ object ScreenController {
                 val msg = when {
                     mode == Mode.NONE -> "DriveHub\n\nApri DriveHub sul telefono e avvia Shizuku\noppure lo specchio dello schermo"
                     blocked() -> if (SpeedMonitor.known())
-                        "Veicolo in movimento\n\nVideo e app bloccati fino all'arresto.\nNavigatore e musica restano disponibili."
+                        "Veicolo in movimento\n\nImmagine coperta, l'audio continua.\nA voce: pausa, prossima, indietro."
                     else "In attesa della velocità\n\nServono GPS o adattatore OBD\nper sbloccare lo schermo."
                     else -> null
                 }
@@ -508,12 +543,17 @@ object ScreenController {
                 if (msg == null && bmp != null) c.drawBitmap(bmp, null, pane, filter)
                 else if (msg != null) drawMessage(c, msg, pane)
                 if (split) drawPanel(c, Rect(pane.right, 0, surfW, surfH))
+                if (passengerMode) {
+                    badgePaint.textSize = surfH / 24f
+                    c.drawText("Modalità passeggero", surfH / 40f, surfH - surfH / 40f, badgePaint)
+                }
             } finally {
                 s.unlockCanvasAndPost(c)
             }
         }
     }
 
+    private val badgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 193, 7) }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textAlign = Paint.Align.CENTER }
 
     private fun paneW() = if (split) (surfW * SPLIT).toInt().coerceAtLeast(1) else surfW

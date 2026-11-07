@@ -138,6 +138,7 @@ class HomeScreen(ctx: CarContext) : Screen(ctx) {
             .addItem(item("Carburante", R.drawable.ic_fuel) { FuelScreen(carContext) })
             .addItem(item("Meteo", R.drawable.ic_weather) { WeatherScreen(carContext) })
             .addItem(item("Errori motore", R.drawable.ic_warning) { DtcScreen(carContext) })
+            .addItem(item(if (ScreenController.passengerMode) "Passeggero: sì" else "Passeggero", R.drawable.ic_passenger) { PassengerScreen(carContext) })
             .build()
         return GridTemplate.Builder().setTitle("Strumenti").setHeaderAction(Action.BACK).setSingleList(list).build()
     }
@@ -167,6 +168,20 @@ class ObdScreen(ctx: CarContext) : ObdBoundScreen(ctx) {
                 .addText(if (s.connected) "Collegato" else s.status).build())
         }
         return PaneTemplate.Builder(pane.build()).setTitle("Cruscotto").setHeaderAction(Action.BACK).build()
+    }
+}
+
+/** Conferma esplicita: chi usa lo schermo è il passeggero, non chi guida */
+class PassengerScreen(ctx: CarContext) : Screen(ctx) {
+    override fun onGetTemplate(): Template {
+        val on = ScreenController.passengerMode
+        val text = if (on) "Modalità passeggero attiva fino alla fine del viaggio.\nVideo e giochi restano coperti in movimento."
+        else "Lo schermo lo usa il passeggero?\nIn movimento si sbloccano le app che non sono video o giochi.\nSi spegne da sola a fine viaggio."
+        val confirm = Action.Builder().setTitle(if (on) "Spegni" else "Sono il passeggero").setOnClickListener {
+            ScreenController.setPassenger(!on)
+            screenManager.pop()
+        }.build()
+        return MessageTemplate.Builder(text).setTitle("Modalità passeggero").setHeaderAction(Action.BACK).addAction(confirm).build()
     }
 }
 
