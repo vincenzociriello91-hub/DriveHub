@@ -6,6 +6,11 @@ import androidx.car.app.CarAppService
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
 import androidx.car.app.Session
+import androidx.car.app.AppManager
+import androidx.car.app.SurfaceCallback
+import androidx.car.app.SurfaceContainer
+import androidx.car.app.model.ActionStrip
+import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.car.app.constraints.ConstraintManager
 import androidx.car.app.model.Action
 import androidx.car.app.model.CarIcon
@@ -29,6 +34,8 @@ import it.vincenzo.drivehub.R
 import it.vincenzo.drivehub.core.Locator
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
+import it.vincenzo.drivehub.core.SpeedMonitor
+import it.vincenzo.drivehub.screen.ScreenController
 import it.vincenzo.drivehub.fuel.FuelRepo
 import it.vincenzo.drivehub.fuel.Offer
 import it.vincenzo.drivehub.obd.ObdManager
@@ -51,20 +58,53 @@ class DriveHubSession : Session() {
             override fun onCreate(owner: LifecycleOwner) {
                 Reports.log("Android Auto: sessione aperta")
                 ObdManager.start(carContext)
+                SpeedMonitor.start(carContext)
+                ScreenController.startSession(carContext)
+                carContext.getCarService(AppManager::class.java).setSurfaceCallback(CarSurface)
             }
             override fun onDestroy(owner: LifecycleOwner) {
+                ScreenController.stopSession()
+                SpeedMonitor.stop()
                 ObdManager.stop()
                 Reports.log("Android Auto: sessione chiusa")
                 Reports.flush("auto")
             }
         })
     }
-    override fun onCreateScreen(intent: Intent): Screen = HomeScreen(carContext)
+    override fun onCreateScreen(intent: Intent): Screen = DisplayScreen(carContext)
+}
+
+/** Superficie di Android Auto passata allo schermo DriveHub; tocchi e trascinamenti vanno alle app */
+private object CarSurface : SurfaceCallback {
+    override fun onSurfaceAvailable(surfaceContainer: SurfaceContainer) {
+        val s = surfaceContainer.surface ?: return
+        ScreenController.attach(s, surfaceContainer.width, surfaceContainer.height, surfaceContainer.dpi)
+    }
+    override fun onSurfaceDestroyed(surfaceContainer: SurfaceContainer) = ScreenController.detach()
+    override fun onClick(x: Float, y: Float) = ScreenController.tap(x, y)
+    override fun onScroll(distanceX: Float, distanceY: Float) = ScreenController.scroll(distanceX, distanceY)
 }
 
 private fun fmt(v: Double?, digits: Int = 0) = v?.let { String.format(Locale.ITALY, "%.${digits}f", it) } ?: "—"
 private fun icon(ctx: CarContext, res: Int) = CarIcon.Builder(IconCompat.createWithResource(ctx, res)).build()
 private fun message(text: String) = MessageTemplate.Builder(text).setTitle("DriveHub").setHeaderAction(Action.BACK).build()
+
+/** Schermata principale: tutto lo schermo è il "secondo tablet"; i pulsanti restano a lato */
+class DisplayScreen(ctx: CarContext) : Screen(ctx) {
+    override fun onGetTemplate(): Template {
+        fun act(res: Int, onClick: () -> Unit) =
+            Action.Builder().setIcon(icon(carContext, res)).setOnClickListener { onClick() }.build()
+        val strip = ActionStrip.Builder()
+            .addAction(act(R.drawable.ic_apps) { ScreenController.home() })
+            .addAction(act(R.drawable.ic_back) { ScreenController.back() })
+            .addAction(act(R.drawable.ic_gauge) { screenManager.push(HomeScreen(carContext)) })
+            .build()
+        return NavigationTemplate.Builder()
+            .setActionStrip(strip)
+            .setMapActionStrip(ActionStrip.Builder().addAction(Action.PAN).build())
+            .build()
+    }
+}
 
 class HomeScreen(ctx: CarContext) : Screen(ctx) {
     override fun onGetTemplate(): Template {
@@ -77,7 +117,7 @@ class HomeScreen(ctx: CarContext) : Screen(ctx) {
             .addItem(item("Meteo", R.drawable.ic_weather) { WeatherScreen(carContext) })
             .addItem(item("Errori motore", R.drawable.ic_warning) { DtcScreen(carContext) })
             .build()
-        return GridTemplate.Builder().setTitle("DriveHub").setHeaderAction(Action.APP_ICON).setSingleList(list).build()
+        return GridTemplate.Builder().setTitle("Strumenti").setHeaderAction(Action.BACK).setSingleList(list).build()
     }
 }
 

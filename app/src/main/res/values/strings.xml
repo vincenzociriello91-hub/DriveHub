@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="touch_desc">Riproduce sul telefono i tocchi fatti sul display dell\'auto quando DriveHub specchia lo schermo. Non legge né registra il contenuto delle app.</string>
+</resources>

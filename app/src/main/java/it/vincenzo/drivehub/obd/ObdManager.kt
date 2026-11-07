@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
+import it.vincenzo.drivehub.core.SpeedMonitor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.Closeable
@@ -104,7 +105,10 @@ object ObdManager {
             if (v == null && ObdParser.isError(raw)) {
                 unsupported += pid
                 Reports.log("PID 01$pid non supportato dall'auto: ${raw.trim()}")
-            } else if (v != null) values[pid] = v
+            } else if (v != null) {
+                values[pid] = v
+                if (pid == "0D") SpeedMonitor.update(v) // la velocità OBD è la più affidabile per il blocco schermo
+            }
         }
         ObdParser.voltage(send(link, "ATRV", 2000))?.let { values["V"] = it }
         val maf = values["10"]; val kmh = values["0D"]

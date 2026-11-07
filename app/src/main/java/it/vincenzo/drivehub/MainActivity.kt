@@ -44,6 +44,17 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.Updater
 import it.vincenzo.drivehub.obd.ObdManager
+import it.vincenzo.drivehub.screen.MirrorService
+import it.vincenzo.drivehub.screen.ScreenController
+import rikka.shizuku.Shizuku
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.runtime.DisposableEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -127,7 +138,9 @@ private fun Home() {
             )
         }
 
-        Section("3. Adattatore OBD") {
+        ScreenSection()
+
+        Section("4. Adattatore OBD") {
             val options = listOf("Wi-Fi (192.168.0.10:35000)" to Prefs.OBD_WIFI) + paired
             if (paired.isEmpty()) Text("Nessun dispositivo Bluetooth associato: associa l'ELM327 dalle impostazioni Bluetooth, poi concedi i permessi.")
             options.forEach { (name, addr) ->
@@ -153,7 +166,7 @@ private fun Home() {
             }
         }
 
-        Section("4. Carburante per la ricerca prezzi") {
+        Section("5. Carburante per la ricerca prezzi") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Benzina", "Gasolio", "GPL", "Metano").forEach { f ->
                     FilterChip(selected = fuel == f, onClick = { fuel = f; Prefs.setFuel(ctx, f) }, label = { Text(f) })
@@ -203,5 +216,80 @@ private fun Home() {
             },
             dismissButton = { TextButton(onClick = { release = null }) { Text("Dopo") } },
         )
+    }
+}
+
+private const val SHIZUKU_PKG = "moe.shizuku.privileged.api"
+
+private fun shizukuState(ctx: Context): String {
+    val installed = try { ctx.packageManager.getPackageInfo(SHIZUKU_PKG, 0); true } catch (_: Exception) { false }
+    val running = runCatching { Shizuku.pingBinder() }.getOrDefault(false)
+    return when {
+        !installed -> "Shizuku non installato"
+        !running -> "Shizuku installato ma non avviato"
+        runCatching { Shizuku.isPreV11() }.getOrDefault(true) -> "Shizuku troppo vecchio: aggiornalo"
+        Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED -> "Shizuku avviato: manca il permesso per DriveHub"
+        else -> "Shizuku pronto"
+    }
+}
+
+/** Schermo dell'auto come secondo tablet: Shizuku (consigliato) o specchio */
+@Composable
+private fun ScreenSection() {
+    val ctx = LocalContext.current
+    var tick by remember { mutableStateOf(0) }
+    val state = remember(tick) { shizukuState(ctx) }
+    val screen by ScreenController.status.collectAsState()
+
+    DisposableEffect(Unit) {
+        val l = Shizuku.OnRequestPermissionResultListener { _, result ->
+            Reports.log("Shizuku: permesso ${if (result == PackageManager.PERMISSION_GRANTED) "concesso" else "negato"}")
+            tick++
+        }
+        Shizuku.addRequestPermissionResultListener(l)
+        onDispose { Shizuku.removeRequestPermissionResultListener(l) }
+    }
+
+    val mirror = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        val data = res.data
+        if (res.resultCode == Activity.RESULT_OK && data != null) {
+            ctx.startForegroundService(
+                Intent(ctx, MirrorService::class.java)
+                    .putExtra(MirrorService.EXTRA_CODE, res.resultCode)
+                    .putExtra(MirrorService.EXTRA_DATA, data)
+            )
+        } else Reports.log("Specchio: consenso negato")
+    }
+
+    Section("3. Schermo dell'auto come tablet") {
+        Text(
+            "Con Shizuku il display dell'auto ha le sue app, indipendenti dal telefono. " +
+                "Prima volta: installa Shizuku, aprilo, attiva \"Debug wireless\" nelle Opzioni sviluppatore e segui l'abbinamento. " +
+                "Dopo ogni riavvio del telefono: apri Shizuku e tocca \"Avvia\". Poi concedi il permesso a DriveHub."
+        )
+        Text("Stato: $state")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = {
+                val open = ctx.packageManager.getLaunchIntentForPackage(SHIZUKU_PKG)
+                    ?: Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$SHIZUKU_PKG"))
+                ctx.startActivity(open)
+            }) { Text("Apri / installa Shizuku") }
+            Button(onClick = {
+                if (runCatching { Shizuku.pingBinder() }.getOrDefault(false)) Shizuku.requestPermission(1)
+                tick++
+            }) { Text("Concedi") }
+        }
+        OutlinedButton(onClick = { tick++ }) { Text("Aggiorna stato") }
+
+        Text("Senza Shizuku: specchio dello schermo del telefono. Per i tocchi dal display attiva \"DriveHub\" in Accessibilità " +
+            "(se è bloccato: Impostazioni › App › DriveHub › ⋮ › Consenti impostazioni con limitazioni).")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = {
+                mirror.launch(ctx.getSystemService(MediaProjectionManager::class.java).createScreenCaptureIntent())
+            }) { Text("Avvia specchio") }
+            OutlinedButton(onClick = { ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) { Text("Accessibilità") }
+        }
+        Text("Display auto: $screen")
+        Text("Sicurezza: sopra i 5 km/h video e app si coprono; restano navigatori e musica.")
     }
 }
