@@ -1,3 +1,7 @@
+Versione 3.5.2 (7 novembre 2026)
+• Rapporto a ogni chiusura: anche quando togli l'app dalle recenti o la metti in secondo piano.
+• Rapporto "chiusura improvvisa" quando Android chiude l'app da solo (memoria, blocco, crash, batteria): al riavvio recupera tutto quello che era successo, con il motivo dato dal sistema.
+
 Versione 3.5.1 (7 novembre 2026)
 • Il lettore musicale non mostra più vocali di WhatsApp e Telegram, registrazioni, suonerie e notifiche.
 • Niente più "<unknown>" al posto dell'artista.

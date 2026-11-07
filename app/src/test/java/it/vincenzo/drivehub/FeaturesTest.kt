@@ -1,5 +1,7 @@
 package it.vincenzo.drivehub
 
+import android.app.ApplicationExitInfo
+import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.features.AlertRules
 import it.vincenzo.drivehub.features.Cmd
 import it.vincenzo.drivehub.features.VoiceCommands
@@ -20,6 +22,11 @@ class FeaturesTest {
         assertEquals(Cmd.Type("Ciao Marco", false), VoiceCommands.parse("Scrivi Ciao Marco"))
         assertEquals(Cmd.Type("canzoni rock", true), VoiceCommands.parse("cerca canzoni rock"))
         assertEquals(Cmd.Fuel, VoiceCommands.parse("cerca la benzina"))
+    }
+
+    @Test fun motivoUscita() {
+        assertEquals("app bloccata (non rispondeva)", Reports.exitReasonText(ApplicationExitInfo.REASON_ANR))
+        assertEquals("memoria del telefono esaurita", Reports.exitReasonText(ApplicationExitInfo.REASON_LOW_MEMORY))
     }
 
     @Test fun elencoCodici() =

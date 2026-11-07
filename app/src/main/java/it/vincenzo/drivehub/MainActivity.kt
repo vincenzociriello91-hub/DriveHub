@@ -95,12 +95,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        if (isFinishing) {
-            Reports.log("Telefono: app chiusa")
+    // onStop arriva anche quando l'app viene tolta dalle recenti (onDestroy spesso no)
+    override fun onStop() {
+        if (!isChangingConfigurations) {
+            Reports.log(if (isFinishing) "Telefono: app chiusa" else "Telefono: app in secondo piano o tolta dalle recenti")
             Reports.flush("chiusura")
         }
-        super.onDestroy()
+        super.onStop()
     }
 }
 
