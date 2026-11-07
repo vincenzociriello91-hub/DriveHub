@@ -19,7 +19,8 @@ object AutoDiagnosis {
     /** done riceve il messaggio da mostrare (su un thread qualsiasi) */
     fun run(ctx: Context, done: (String) -> Unit) {
         if (!ScreenController.shizukuReady()) {
-            done("Serve Shizuku avviato con il permesso per DriveHub")
+            Reports.log("Diagnosi Android Auto: Shizuku non pronto")
+            done("Shizuku non è avviato: apri Shizuku, tocca Avvia, poi riprova")
             return
         }
         val args = Shizuku.UserServiceArgs(ComponentName(ctx.packageName, DisplayService::class.java.name))

@@ -63,8 +63,12 @@ object ObdManager {
 
     private class Link(val input: InputStream, val output: OutputStream, val closer: Closeable)
 
-    fun start(ctx: Context) {
+    /** In auto riprova sempre (con attese crescenti); dal telefono si arrende dopo 3 tentativi */
+    @Volatile private var persistent = true
+
+    fun start(ctx: Context, persistent: Boolean = true) {
         if (running) return
+        this.persistent = persistent
         val device = Prefs.obdDevice(ctx) ?: run {
             _state.value = ObdState("Scegli l'adattatore OBD nell'app sul telefono")
             return
@@ -96,6 +100,12 @@ object ObdManager {
     }
 
     private fun loop(ctx: Context, device: String) {
+        var failures = 0
+        var gaveUp = false
+        val kind = when {
+            device == Prefs.OBD_WIFI -> "Wi-Fi"; device == Prefs.OBD_USB -> "USB"
+            device.startsWith(Prefs.OBD_BLE) -> "Bluetooth LE"; else -> "Bluetooth"
+        }
         while (running) {
             var link: Link? = null
             try {
@@ -108,19 +118,31 @@ object ObdManager {
                 send(link, "ATI", 3000).lines().map { it.trim() }.lastOrNull { it.isNotEmpty() }?.let { info["Adattatore"] = it }
                 ObdParser.vin(send(link, "0902", 5000))?.let { info["Telaio (VIN)"] = it }
                 // il VIN è un dato personale: nel rapporto solo se è stato letto, non il valore
-                Reports.log("OBD connesso ($device) · ${info["Protocollo"] ?: "protocollo ?"} · ${info["Adattatore"] ?: "adattatore ?"} · VIN ${if ("Telaio (VIN)" in info) "letto" else "non disponibile"}")
+                failures = 0
+                Reports.log("OBD connesso ($kind) · ${info["Protocollo"] ?: "protocollo ?"} · ${info["Adattatore"] ?: "adattatore ?"} · VIN ${if ("Telaio (VIN)" in info) "letto" else "non disponibile"}")
                 _state.value = _state.value.copy(status = "Connesso", connected = true, info = info)
                 while (running) poll(link)
             } catch (e: Exception) {
                 if (!running) break
-                Reports.log("OBD errore: ${e.javaClass.simpleName}: ${e.message}")
-                _state.value = _state.value.copy(status = "Errore: ${e.message ?: "connessione persa"}. Riprovo…", connected = false)
-                try { Thread.sleep(5000) } catch (_: InterruptedException) { break }
+                failures++
+                Reports.log("OBD errore ($kind, tentativo $failures): ${e.javaClass.simpleName}: ${e.message}")
+                if (!persistent && failures >= 3) {
+                    gaveUp = true
+                    running = false
+                    Reports.log("OBD: adattatore non raggiungibile dopo 3 tentativi, smetto di riprovare")
+                    _state.value = _state.value.copy(
+                        status = "Adattatore $kind non raggiungibile: controlla il collegamento e tocca Collega", connected = false)
+                    break
+                }
+                // 5, 10, 20, 40, poi 60 secondi: senza adattatore non si consuma batteria riprovando di continuo
+                val wait = minOf(5000L shl minOf(failures - 1, 4), 60_000L)
+                _state.value = _state.value.copy(status = "Errore: ${e.message ?: "connessione persa"}. Riprovo tra ${wait / 1000} s…", connected = false)
+                try { Thread.sleep(wait) } catch (_: InterruptedException) { break }
             } finally {
                 try { link?.closer?.close() } catch (_: Exception) {}
             }
         }
-        _state.value = _state.value.copy(status = "Non connesso", connected = false)
+        if (!gaveUp) _state.value = _state.value.copy(status = "Non connesso", connected = false)
     }
 
     private fun poll(link: Link) {

@@ -405,7 +405,7 @@ private fun DiagnosiTab(permTick: Int) {
     Section("Cruscotto", Icons.Default.Build) {
         Text(obd.status, style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(enabled = device != null && !obd.connected, onClick = { ObdManager.start(ctx) }) { Text("Collega") }
+            Button(enabled = device != null && !obd.connected, onClick = { ObdManager.start(ctx, persistent = false) }) { Text("Collega") }
             OutlinedButton(enabled = obd.connected, onClick = { ObdManager.stop() }) { Text("Scollega") }
         }
         obd.values.forEach { (k, v) ->

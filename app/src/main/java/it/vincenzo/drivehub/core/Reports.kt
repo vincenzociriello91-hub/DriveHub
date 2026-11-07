@@ -48,8 +48,25 @@ object Reports {
         recoverPrevious(ctx)
     }
 
+    private var lastMsg: String? = null
+    private var repeats = 0
+
+    /** Chiude il conteggio delle ripetizioni dell'ultimo messaggio (da chiamare dentro synchronized(events)) */
+    private fun closeRepeats() {
+        if (repeats == 0) return
+        val note = "(il messaggio precedente si è ripetuto altre $repeats volte)"
+        repeats = 0
+        val t = System.currentTimeMillis()
+        events += t to note
+        runCatching { journal?.appendText("$t\t$note\n") }
+    }
+
     fun log(msg: String) {
         synchronized(events) {
+            // messaggi identici di fila (es. tentativi di connessione) diventano una riga sola con il conteggio
+            if (msg == lastMsg) { repeats++; return }
+            closeRepeats()
+            lastMsg = msg
             val t = System.currentTimeMillis()
             events += t to msg
             if (events.size > 2000) events.removeAt(0)
@@ -75,6 +92,15 @@ object Reports {
             ctx.packageManager.getComponentEnabledSetting(ComponentName(ctx, MusicService::class.java)) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
         }
         put("shizukuPronto") { ScreenController.shizukuReady() }
+        put("shizukuDettaglio") {
+            val running = runCatching { rikka.shizuku.Shizuku.pingBinder() }.getOrDefault(false)
+            when {
+                runCatching { ctx.packageManager.getPackageInfo("moe.shizuku.privileged.api", 0) }.isFailure -> "non installato"
+                !running -> "installato ma non avviato"
+                rikka.shizuku.Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED -> "avviato, manca il permesso per DriveHub"
+                else -> "pronto"
+            }
+        }
         put("schermoAuto") { ScreenController.status.value }
         put("accessibilitaAttiva") { TouchService.instance != null }
         put("passeggero") { ScreenController.passengerMode }
@@ -103,6 +129,8 @@ object Reports {
     }
 
     private fun buildLocked(reason: String, error: Throwable?, exit: JSONObject?, state: JSONObject): JSONObject = synchronized(events) {
+        closeRepeats()
+        lastMsg = null
         val ev = JSONArray()
         events.forEach { (t, m) -> ev.put(JSONObject().put("ora", iso(t)).put("msg", m)) }
         val json = JSONObject()
@@ -165,6 +193,10 @@ object Reports {
         ApplicationExitInfo.REASON_PERMISSION_CHANGE -> "permessi cambiati"
         ApplicationExitInfo.REASON_DEPENDENCY_DIED -> "un servizio da cui dipendeva si è fermato"
         ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "avvio non riuscito"
+        13 -> "chiusa dal sistema (altro motivo)" // REASON_OTHER
+        14 -> "congelata dal sistema" // REASON_FREEZER
+        15 -> "stato dell'app cambiato (attivata o disattivata)" // REASON_PACKAGE_STATE_CHANGE
+        16 -> "aggiornamento dell'app" // REASON_PACKAGE_UPDATED, Android 14+
         else -> "altro motivo ($reason)"
     }
 

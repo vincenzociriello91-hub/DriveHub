@@ -34,6 +34,7 @@ class FeaturesTest {
     @Test fun motivoUscita() {
         assertEquals("app bloccata (non rispondeva)", Reports.exitReasonText(ApplicationExitInfo.REASON_ANR))
         assertEquals("memoria del telefono esaurita", Reports.exitReasonText(ApplicationExitInfo.REASON_LOW_MEMORY))
+        assertEquals("aggiornamento dell'app", Reports.exitReasonText(16))
     }
 
     @Test fun elencoCodici() =

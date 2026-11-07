@@ -1,3 +1,8 @@
+Versione 3.8.4 (7 novembre 2026)
+• OBD: se l'adattatore non risponde, DriveHub non riprova più ogni 5 secondi all'infinito. Dal telefono si ferma dopo 3 tentativi e lo dice; in auto riprova a intervalli sempre più lunghi (fino a un minuto), per non consumare batteria.
+• Rapporti più leggibili: i messaggi uguali di fila diventano una riga sola con il numero di ripetizioni; motivo di chiusura spiegato anche per gli aggiornamenti dell'app; stato di Shizuku più preciso (non installato, non avviato, senza permesso).
+• Diagnosi Android Auto: se Shizuku non è avviato lo dice chiaramente.
+
 Versione 3.8.3 (7 novembre 2026)
 • Pulsante "Diagnosi Android Auto" (Altro › Permessi e Android Auto): se DriveHub non compare nel menu di Android Auto, legge con Shizuku il motivo dal registro del telefono e lo salva nel rapporto "diagnosi-aa".
 
