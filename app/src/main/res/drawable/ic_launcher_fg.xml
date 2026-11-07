@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Volante stilizzato -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,30a24,24 0,1 0,0.01 0zM54,36a18,18 0,0 1,17.4 13.5h-11a7,7 0,0 0,-12.8 0h-11A18,18 0,0 1,54 36zM37.2,56h10.9a7,7 0,0 0,2.4 3.6v10.9A18,18 0,0 1,37.2 56zM57.5,70.5v-10.9a7,7 0,0 0,2.4 -3.6h10.9A18,18 0,0 1,57.5 70.5z" />
+</vector>

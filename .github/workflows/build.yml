@@ -1,0 +1,54 @@
+name: Build DriveHub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Chiave di firma
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/drivehub.jks"
+            echo "KEYSTORE_PATH=$RUNNER_TEMP/drivehub.jks" >> "$GITHUB_ENV"
+          fi
+
+      - name: Test e compilazione
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+        run: gradle testDebugUnitTest assembleRelease --no-daemon
+
+      - name: Pubblica la Release (solo se la versione è nuova)
+        # Senza la chiave vera l'APK non si installerebbe sopra le versioni precedenti: niente Release
+        if: env.KEYSTORE_PATH != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CODE=$(grep -oP 'versionCode = \K\d+' app/build.gradle.kts)
+          NAME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          if gh release view "v$CODE" >/dev/null 2>&1; then
+            echo "Release v$CODE già presente"
+            exit 0
+          fi
+          cp app/build/outputs/apk/release/app-release.apk DriveHub.apk
+          awk 'NR>1 && /^Versione /{exit} {print}' app/src/main/assets/CHANGELOG.md > notes.txt
+          gh release create "v$CODE" DriveHub.apk --title "DriveHub $NAME" --notes-file notes.txt
