@@ -152,6 +152,16 @@ object ObdManager {
 
     @SuppressLint("MissingPermission")
     private fun open(ctx: Context, device: String): Link {
+        if (device == Prefs.OBD_USB) {
+            val l = UsbObd.open(ctx)
+            return Link(l.input, l.output, l.closer)
+        }
+        if (device.startsWith(Prefs.OBD_BLE)) {
+            if (ctx.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
+                error("permesso Bluetooth mancante")
+            val l = BleObd.open(ctx, device.removePrefix(Prefs.OBD_BLE))
+            return Link(l.input, l.output, l.closer)
+        }
         if (device == Prefs.OBD_WIFI) {
             val s = Socket()
             s.connect(InetSocketAddress("192.168.0.10", 35000), 5000)

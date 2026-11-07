@@ -7,6 +7,10 @@ data class ParkingSpot(val lat: Double, val lon: Double, val time: Long)
 object Prefs {
     /** "wifi" per adattatori Wi-Fi, altrimenti indirizzo MAC Bluetooth; null = nessuno scelto */
     const val OBD_WIFI = "wifi"
+    /** Adattatore USB con cavo OTG */
+    const val OBD_USB = "usb"
+    /** Prefisso per adattatori Bluetooth LE: "ble:<indirizzo>" */
+    const val OBD_BLE = "ble:"
 
     private fun sp(ctx: Context) = ctx.getSharedPreferences("drivehub", Context.MODE_PRIVATE)
 

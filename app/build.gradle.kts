@@ -12,8 +12,8 @@ android {
         applicationId = "it.vincenzo.drivehub"
         minSdk = 30
         targetSdk = 35
-        versionCode = 6
-        versionName = "3.3.0"
+        versionCode = 7
+        versionName = "3.4.0"
     }
 
     // Senza chiave (secret non impostati) l'APK di release esce non firmato: serve solo a verificare la build
@@ -64,6 +64,7 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.0")
     implementation("androidx.camera:camera-video:1.4.0")
     implementation("androidx.lifecycle:lifecycle-service:2.8.7")
+    implementation("com.github.mik3y:usb-serial-for-android:3.8.1")
 
     testImplementation("junit:junit:4.13.2")
 }

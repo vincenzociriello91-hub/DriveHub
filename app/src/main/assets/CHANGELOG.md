@@ -1,3 +1,7 @@
+Versione 3.4.0 (7 novembre 2026)
+• Adattatori OBD con ogni collegamento: Bluetooth classico, Bluetooth LE (Vgate iCar Pro BLE, OBDLink CX e simili, con la ricerca nell'app), Wi-Fi e cavo USB (OTG).
+• Nella sezione OBD trovi la spiegazione di ogni collegamento e quale usare con Android Auto via cavo o senza fili.
+
 Versione 3.3.0 (7 novembre 2026)
 • Grafica nuova in stile Google Pixel nell'app: colori presi dallo sfondo del telefono, schede arrotondate con icone, stato di Shizuku, OBD, dashcam e passeggero in cima.
 • Launcher sul display dell'auto rinnovato: barra con ora, data e velocità, app in riquadri grandi e facili da toccare, sfondo scuro che non abbaglia.

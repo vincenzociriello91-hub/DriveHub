@@ -40,6 +40,7 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.Updater
 import it.vincenzo.drivehub.obd.ObdManager
+import it.vincenzo.drivehub.obd.BleObd
 import it.vincenzo.drivehub.ui.DriveHubTheme
 import it.vincenzo.drivehub.ui.Section
 import it.vincenzo.drivehub.ui.StatusChip
@@ -146,6 +147,7 @@ private fun Home() {
     var permTick by remember { mutableStateOf(0) }
     val obd by ObdManager.state.collectAsState()
     var confirmClear by remember { mutableStateOf(false) }
+    var bleFound by remember { mutableStateOf(listOf<Pair<String, String>>()) }
 
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         Reports.log("Permessi: $it")
@@ -169,7 +171,7 @@ private fun Home() {
             Button(onClick = {
                 permissions.launch(arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.READ_MEDIA_AUDIO,
+                    Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.READ_MEDIA_AUDIO,
                     Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO,
                 ))
             }) { Text("Concedi i permessi") }
@@ -186,14 +188,23 @@ private fun Home() {
         ScreenSection()
 
         Section("4. Adattatore OBD", Icons.Default.Build) {
-            val options = listOf("Wi-Fi (192.168.0.10:35000)" to Prefs.OBD_WIFI) + paired
-            if (paired.isEmpty()) Text("Nessun dispositivo Bluetooth associato: associa l'ELM327 dalle impostazioni Bluetooth, poi concedi i permessi.")
+            val options = listOf(
+                "Wi-Fi (192.168.0.10:35000)" to Prefs.OBD_WIFI,
+                "Cavo USB (OTG)" to Prefs.OBD_USB,
+            ) + paired.map { (n, a) -> "Bluetooth · ${n ?: a}" to a } + bleFound.map { (n, a) -> "Bluetooth LE · $n" to Prefs.OBD_BLE + a }
+            Text("Bluetooth classico: associa l'ELM327 dalle impostazioni del telefono. Bluetooth LE (Vgate, OBDLink CX…): usa la ricerca qui sotto. " +
+                "Wi-Fi: collega il telefono alla rete dell'adattatore (non insieme ad Android Auto senza fili, che usa già il Wi-Fi). " +
+                "USB: adattatore con cavo OTG nella presa del telefono (se Android Auto usa il cavo, serve un adattatore wireless per Android Auto).")
+            OutlinedButton(onClick = {
+                BleObd.scan(ctx, { name, addr -> if (bleFound.none { it.second == addr }) bleFound = bleFound + (name to addr) })
+            }) { Text("Cerca adattatori Bluetooth LE") }
             options.forEach { (name, addr) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(selected = device == addr, onClick = {
+                        ObdManager.stop()
                         device = addr; Prefs.setObdDevice(ctx, addr); Reports.log("OBD scelto: $name")
                     })
-                    Text(name ?: addr)
+                    Text(name)
                 }
             }
             Text("Stato: ${obd.status}")
