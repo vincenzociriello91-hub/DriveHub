@@ -1,3 +1,8 @@
+Versione 3.5.1 (7 novembre 2026)
+• Il lettore musicale non mostra più vocali di WhatsApp e Telegram, registrazioni, suonerie e notifiche.
+• Niente più "<unknown>" al posto dell'artista.
+• Il lettore si chiama "DriveHub Musica", per distinguerlo dallo schermo DriveHub.
+
 Versione 3.5.0 (7 novembre 2026)
 • OBDTool è confluito in DriveHub: tutta la diagnostica ora è qui.
 • Codici errore memorizzati, in attesa e permanenti, con quasi 300 spiegazioni in italiano che si aggiornano da sole.

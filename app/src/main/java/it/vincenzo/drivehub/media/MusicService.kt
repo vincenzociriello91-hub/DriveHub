@@ -56,7 +56,9 @@ class MusicService : MediaLibraryService() {
         contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.ALBUM),
-            "${MediaStore.Audio.Media.IS_MUSIC} != 0 OR ${MediaStore.Audio.Media.IS_PODCAST} != 0",
+            // niente vocali di WhatsApp/Telegram, registrazioni, suonerie e notifiche: solo musica e podcast
+            "(${MediaStore.Audio.Media.IS_MUSIC} != 0 OR ${MediaStore.Audio.Media.IS_PODCAST} != 0)" +
+                EXCLUDED.joinToString("") { " AND ${MediaStore.Audio.Media.RELATIVE_PATH} NOT LIKE '%$it%'" },
             null, "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE"
         )?.use { c ->
             while (c.moveToNext() && out.size < 1000) {
@@ -65,7 +67,8 @@ class MusicService : MediaLibraryService() {
                     .setMediaId("song:$id")
                     .setUri(ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id))
                     .setMediaMetadata(
-                        MediaMetadata.Builder().setTitle(c.getString(1)).setArtist(c.getString(2)).setAlbumTitle(c.getString(3))
+                        MediaMetadata.Builder().setTitle(c.getString(1)).setArtist(c.getString(2).takeIf { it != MediaStore.UNKNOWN_STRING })
+                            .setAlbumTitle(c.getString(3).takeIf { it != MediaStore.UNKNOWN_STRING })
                             .setIsBrowsable(false).setIsPlayable(true).setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC).build()
                     ).build()
             }
@@ -116,5 +119,8 @@ class MusicService : MediaLibraryService() {
         }
     }
 
-    companion object { const val ROOT = "root" }
+    companion object {
+        const val ROOT = "root"
+        private val EXCLUDED = listOf("WhatsApp", "Telegram", "Recordings", "Ringtones", "Notifications", "Alarms", "Call")
+    }
 }
