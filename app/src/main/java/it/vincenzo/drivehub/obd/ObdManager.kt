@@ -15,6 +15,8 @@ import java.io.Closeable
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import java.net.Socket
 import java.util.UUID
 
@@ -181,6 +183,12 @@ object ObdManager {
         }
         if (device == Prefs.OBD_WIFI) {
             val s = Socket()
+            // la rete dell'adattatore non ha internet: senza questo Android manda la connessione sui dati mobili
+            val cm = ctx.getSystemService(ConnectivityManager::class.java)
+            @Suppress("DEPRECATION")
+            val wifi = cm.allNetworks.firstOrNull { cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true }
+                ?: error("telefono non collegato alla rete Wi-Fi dell'adattatore OBD")
+            wifi.bindSocket(s)
             s.connect(InetSocketAddress("192.168.0.10", 35000), 5000)
             return Link(s.getInputStream(), s.getOutputStream(), s)
         }

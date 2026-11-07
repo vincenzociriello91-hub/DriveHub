@@ -1,3 +1,6 @@
+Versione 3.5.3 (7 novembre 2026)
+• OBD Wi-Fi: la connessione passa sempre dalla rete dell'adattatore e non più dai dati mobili; se il telefono non è collegato a quella rete, DriveHub lo dice chiaramente.
+
 Versione 3.5.2 (7 novembre 2026)
 • Rapporto a ogni chiusura: anche quando togli l'app dalle recenti o la metti in secondo piano.
 • Rapporto "chiusura improvvisa" quando Android chiude l'app da solo (memoria, blocco, crash, batteria): al riavvio recupera tutto quello che era successo, con il motivo dato dal sistema.

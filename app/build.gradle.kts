@@ -12,8 +12,8 @@ android {
         applicationId = "it.vincenzo.drivehub"
         minSdk = 30
         targetSdk = 35
-        versionCode = 10
-        versionName = "3.5.2"
+        versionCode = 11
+        versionName = "3.5.3"
     }
 
     // Senza chiave (secret non impostati) l'APK di release esce non firmato: serve solo a verificare la build
