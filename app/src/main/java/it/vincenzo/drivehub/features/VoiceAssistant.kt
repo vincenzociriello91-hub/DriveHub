@@ -14,6 +14,7 @@ import it.vincenzo.drivehub.core.Locator
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.fuel.FuelRepo
+import it.vincenzo.drivehub.obd.DtcInfo
 import it.vincenzo.drivehub.obd.ObdManager
 import it.vincenzo.drivehub.screen.ScreenController
 import it.vincenzo.drivehub.screen.launchableActivities
@@ -101,8 +102,9 @@ object VoiceAssistant {
             Cmd.PlayPause -> mediaKey(ctx, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
             Cmd.Next -> mediaKey(ctx, KeyEvent.KEYCODE_MEDIA_NEXT)
             Cmd.Previous -> mediaKey(ctx, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            is Cmd.Type -> ScreenController.typeText(cmd.text, cmd.submit)
             Cmd.SaveClip -> Speech.say(if (DashcamService.protectNow()) "Salvo la clip della dashcam" else "La dashcam è spenta")
-            is Cmd.Unknown -> Speech.say("Non ho capito. Puoi dire: apri un'app, consumi, benzina, errori, motore, meteo, viaggio.")
+            is Cmd.Unknown -> Speech.say("Non ho capito. Puoi dire: apri un'app, scrivi, cerca, consumi, benzina, errori, motore, meteo, viaggio.")
         }
     }
 
@@ -167,7 +169,7 @@ object VoiceAssistant {
                 when {
                     codes == null -> "La centralina non ha risposto"
                     codes.isEmpty() -> "Nessun codice di errore memorizzato"
-                    else -> "Codici errore: ${codes.joinToString(", ")}"
+                    else -> "Codici errore: " + codes.joinToString("; ") { "$it, ${DtcInfo.describe(it)}" }
                 }
             )
         }

@@ -1,6 +1,8 @@
 package it.vincenzo.drivehub.screen
 
 import android.accessibilityservice.AccessibilityService
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -50,6 +52,7 @@ object ScreenController {
     enum class Mode { NONE, SHIZUKU, MIRROR }
 
     private const val SPLIT = 0.62f
+    private const val LONG_MS = 800L
 
     /** App che restano utilizzabili in movimento (oltre a quelle di categoria Mappe e Audio) */
     private val ALLOWED_MOVING = setOf(
@@ -98,6 +101,8 @@ object ScreenController {
     @Volatile private var topPackage: String? = null
     private var lastBlocked: Boolean? = null
     private var gesture: FloatArray? = null
+    /** Il prossimo tocco diventa una pressione lunga (Android Auto non la invia) */
+    @Volatile private var longPressNext = false
 
     // ---------- chiamate dall'esterno (qualsiasi thread) ----------
 
@@ -162,9 +167,15 @@ object ScreenController {
             if (x >= pw) return@post // tocco sul pannello cruscotto
             val dx = x * dispW / pw
             val dy = y * dispH / surfH
+            val long = longPressNext
+            longPressNext = false
             when (mode) {
-                Mode.SHIZUKU -> client?.let { c -> io.execute { runCatching { c.tap(dx, dy) } } }
-                Mode.MIRROR -> phonePoint(dx, dy)?.let { (px, py) -> TouchService.instance?.swipe(px, py, px, py, 50) }
+                Mode.SHIZUKU -> client?.let { c ->
+                    io.execute { runCatching { if (long) c.swipe(dx, dy, dx, dy, LONG_MS) else c.tap(dx, dy) } }
+                }
+                Mode.MIRROR -> phonePoint(dx, dy)?.let { (px, py) ->
+                    TouchService.instance?.swipe(px, py, px, py, if (long) LONG_MS else 50)
+                }
                 Mode.NONE -> {}
             }
         }
@@ -232,6 +243,39 @@ object ScreenController {
     }
 
     fun isShizuku() = mode == Mode.SHIZUKU
+
+    fun armLongPress() {
+        longPressNext = true
+    }
+
+    /**
+     * Dettatura nel campo di testo selezionato sul display: con Shizuku si incolla dagli appunti
+     * (funziona anche con lettere accentate), nello specchio si usa l'accessibilità.
+     */
+    fun typeText(text: String, submit: Boolean) {
+        h.post {
+            val ctx = app ?: return@post
+            if (mode == Mode.NONE) { Speech.say("Nessuno schermo DriveHub attivo"); return@post }
+            if (blocked()) { Speech.say("Non posso scrivere in quest'app mentre guidi"); return@post }
+            when (mode) {
+                Mode.SHIZUKU -> {
+                    val c = client ?: return@post
+                    ctx.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("DriveHub", text))
+                    io.execute {
+                        runCatching {
+                            c.key(KeyEvent.KEYCODE_PASTE)
+                            if (submit) c.key(KeyEvent.KEYCODE_ENTER)
+                        }.onFailure { Reports.log("Dettatura fallita: ${it.message}") }
+                    }
+                }
+                Mode.MIRROR -> if (TouchService.instance?.typeText(text, submit) != true) {
+                    Speech.say("Tocca prima il campo di testo, poi riprova")
+                }
+                Mode.NONE -> {}
+            }
+            Reports.log("Dettatura (${text.length} caratteri${if (submit) ", invio" else ""})")
+        }
+    }
 
     /** Schermo diviso: app a sinistra (display virtuale ristretto), cruscotto DriveHub a destra */
     fun toggleSplit() {

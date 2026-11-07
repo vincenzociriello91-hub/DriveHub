@@ -42,6 +42,7 @@ import it.vincenzo.drivehub.features.VoiceAssistant
 import androidx.car.app.CarToast
 import it.vincenzo.drivehub.fuel.FuelRepo
 import it.vincenzo.drivehub.fuel.Offer
+import it.vincenzo.drivehub.obd.DtcInfo
 import it.vincenzo.drivehub.obd.ObdManager
 import it.vincenzo.drivehub.weather.Forecast
 import it.vincenzo.drivehub.weather.Weather
@@ -111,6 +112,10 @@ class DisplayScreen(ctx: CarContext) : Screen(ctx) {
         val map = ActionStrip.Builder()
             .addAction(Action.PAN)
             .addAction(act(R.drawable.ic_split) { ScreenController.toggleSplit() })
+            .addAction(act(R.drawable.ic_longpress) {
+                ScreenController.armLongPress()
+                CarToast.makeText(carContext, "Tocca il punto da tenere premuto", CarToast.LENGTH_SHORT).show()
+            })
             .addAction(act(R.drawable.ic_record) {
                 val ok = DashcamService.protectNow()
                 CarToast.makeText(carContext, if (ok) "Clip dashcam salvata" else "Dashcam spenta", CarToast.LENGTH_SHORT).show()
@@ -174,7 +179,7 @@ class DtcScreen(ctx: CarContext) : ObdBoundScreen(ctx) {
         val codes = s.dtcs ?: return ListTemplate.Builder().setTitle("Errori motore").setHeaderAction(Action.BACK).setLoading(true).build()
         if (codes.isEmpty()) return message("Nessun codice di errore memorizzato.")
         val list = ItemList.Builder()
-        codes.take(6).forEach { list.addItem(Row.Builder().setTitle(it).addText("Dettagli nell'app sul telefono, a veicolo fermo").build()) }
+        codes.take(6).forEach { list.addItem(Row.Builder().setTitle(it).addText(DtcInfo.describe(it)).build()) }
         return ListTemplate.Builder().setTitle("Errori motore (${codes.size})").setHeaderAction(Action.BACK).setSingleList(list.build()).build()
     }
 }

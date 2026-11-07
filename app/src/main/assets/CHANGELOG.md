@@ -1,3 +1,10 @@
+Versione 3.1.0 (7 novembre 2026)
+• Codici errore spiegati in italiano: sul display, a voce, negli avvisi e nell'app.
+• Cancellazione dei codici errore dall'app sul telefono, con conferma e solo a veicolo fermo.
+• Dettatura sul display dell'auto: tocca un campo di testo e di' "scrivi …" oppure "cerca …" (la ricerca preme anche Invio).
+• Pressione lunga: tocca il pulsante con il dito, poi il punto da tenere premuto.
+• Aggiornamenti automatici di DriveHub: generale la domenica e manutenzione la sera, in base ai rapporti.
+
 Versione 3.0.0 (7 novembre 2026)
 • Schermo diviso: app a sinistra e cruscotto DriveHub a destra (ora, velocità, giri, consumi, motore, viaggio, prezzo carburante), sempre visibile anche in movimento.
 • Assistente vocale: pulsante microfono sul display. "Apri YouTube", "quanto consumo", "benzina", "errori", "motore", "meteo", "viaggio", "pausa", "prossima", "salva clip".

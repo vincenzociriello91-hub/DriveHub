@@ -5,6 +5,7 @@ import it.vincenzo.drivehub.DriveHubApp
 import it.vincenzo.drivehub.core.Notify
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
+import it.vincenzo.drivehub.obd.DtcInfo
 import java.util.Locale
 
 /** Regole pure degli avvisi (testabili) */
@@ -49,7 +50,8 @@ object AlertMonitor {
         knownDtcs = codes.toSet()
         if (new.isEmpty()) return
         fire("dtc-${new.joinToString()}",
-            (if (first) "Codici errore memorizzati nella centralina: " else "Nuovo codice errore: ") + new.joinToString(", "))
+            (if (first) "Codici errore memorizzati nella centralina: " else "Nuovo codice errore: ") +
+                new.joinToString("; ") { "$it, ${DtcInfo.describe(it)}" })
     }
 
     fun maintenance(ctx: Context) {

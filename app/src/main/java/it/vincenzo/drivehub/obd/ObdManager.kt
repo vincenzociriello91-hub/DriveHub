@@ -45,6 +45,7 @@ object ObdManager {
 
     @Volatile private var running = false
     @Volatile private var dtcRequested = false
+    @Volatile private var clearRequested = false
     /** Lettura automatica dei codici errore ogni 5 minuti (0 = subito alla connessione) */
     private var lastAutoDtc = 0L
     private var thread: Thread? = null
@@ -70,6 +71,12 @@ object ObdManager {
         thread?.interrupt()
         Reports.log("OBD fermato")
         Reports.flush("obd")
+    }
+
+    /** Cancellazione dei codici (modo 04): solo su conferma dell'utente e a veicolo fermo */
+    fun requestClear() {
+        clearRequested = true
+        requestDtc()
     }
 
     /** dtcs torna null finché la nuova lettura non arriva */
@@ -128,6 +135,10 @@ object ObdManager {
         if (now - lastAutoDtc > 300_000) {
             lastAutoDtc = now
             dtcRequested = true
+        }
+        if (clearRequested) {
+            clearRequested = false
+            Reports.log("Cancellazione codici errore: ${send(link, "04", 5000).trim()}")
         }
         if (dtcRequested) {
             dtcRequested = false

@@ -44,6 +44,8 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.Updater
 import it.vincenzo.drivehub.obd.ObdManager
+import it.vincenzo.drivehub.obd.DtcInfo
+import it.vincenzo.drivehub.core.SpeedMonitor
 import it.vincenzo.drivehub.screen.MirrorService
 import it.vincenzo.drivehub.screen.ScreenController
 import rikka.shizuku.Shizuku
@@ -101,6 +103,7 @@ private fun Home() {
     var saved by remember { mutableStateOf("") }
     var permTick by remember { mutableStateOf(0) }
     val obd by ObdManager.state.collectAsState()
+    var confirmClear by remember { mutableStateOf(false) }
 
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         Reports.log("Permessi: $it")
@@ -158,11 +161,17 @@ private fun Home() {
                 }
                 Text("$label: ${String.format(Locale.ITALY, "%.1f", v)}")
             }
-            obd.dtcs?.let { Text(if (it.isEmpty()) "Nessun codice di errore" else "Codici errore: ${it.joinToString()}") }
+            obd.dtcs?.let { codes ->
+                if (codes.isEmpty()) Text("Nessun codice di errore")
+                codes.forEach { Text("$it · ${DtcInfo.describe(it)}") }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(enabled = device != null, onClick = { ObdManager.start(ctx) }) { Text("Prova") }
                 OutlinedButton(enabled = obd.connected, onClick = { ObdManager.requestDtc() }) { Text("Leggi errori") }
                 OutlinedButton(onClick = { ObdManager.stop() }) { Text("Ferma") }
+            }
+            if (!obd.dtcs.isNullOrEmpty()) {
+                OutlinedButton(onClick = { confirmClear = true }) { Text("Cancella errori") }
             }
         }
 
@@ -201,6 +210,29 @@ private fun Home() {
         Section("Novità") {
             Text(remember { ctx.assets.open("CHANGELOG.md").bufferedReader().use { it.readText() } })
         }
+    }
+
+    if (confirmClear) {
+        val stopped = !SpeedMonitor.moving()
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text("Cancellare i codici errore?") },
+            text = {
+                Text(
+                    if (!stopped) "Si può fare solo a veicolo fermo."
+                    else "La spia si spegne, ma se il guasto c'è ancora i codici tornano. Si azzerano anche i controlli " +
+                        "delle emissioni: prima di una revisione guida qualche giorno. Meglio farlo a motore spento, quadro acceso."
+                )
+            },
+            confirmButton = {
+                TextButton(enabled = stopped, onClick = {
+                    confirmClear = false
+                    Reports.log("Cancellazione codici confermata dall'utente")
+                    ObdManager.requestClear()
+                }) { Text("Cancella") }
+            },
+            dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Annulla") } },
+        )
     }
 
     release?.let { r ->

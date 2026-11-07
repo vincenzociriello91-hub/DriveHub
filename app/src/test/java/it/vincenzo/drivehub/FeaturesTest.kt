@@ -3,6 +3,7 @@ package it.vincenzo.drivehub
 import it.vincenzo.drivehub.features.AlertRules
 import it.vincenzo.drivehub.features.Cmd
 import it.vincenzo.drivehub.features.VoiceCommands
+import it.vincenzo.drivehub.obd.DtcInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -16,6 +17,17 @@ class FeaturesTest {
         assertEquals(Cmd.Errors, VoiceCommands.parse("ci sono errori nel motore"))
         assertEquals(Cmd.PlayPause, VoiceCommands.parse("metti in pausa"))
         assertTrue(VoiceCommands.parse("raccontami una barzelletta") is Cmd.Unknown)
+        assertEquals(Cmd.Type("Ciao Marco", false), VoiceCommands.parse("Scrivi Ciao Marco"))
+        assertEquals(Cmd.Type("canzoni rock", true), VoiceCommands.parse("cerca canzoni rock"))
+        assertEquals(Cmd.Fuel, VoiceCommands.parse("cerca la benzina"))
+    }
+
+    @Test fun descrizioneCodici() {
+        assertEquals("Catalizzatore: efficienza sotto la soglia", DtcInfo.describe("P0420"))
+        assertTrue(DtcInfo.describe("P0302").contains("cilindro 2"))
+        assertTrue(DtcInfo.describe("P0352").contains("cilindro 2"))
+        assertTrue(DtcInfo.describe("P1234").contains("Ford"))
+        assertTrue(DtcInfo.describe("C0035").startsWith("Telaio"))
     }
 
     @Test fun nomeApp() {
