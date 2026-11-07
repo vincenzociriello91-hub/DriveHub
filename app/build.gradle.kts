@@ -16,29 +16,21 @@ android {
         versionName = "1.0.0"
     }
 
+    // Senza chiave (secret non impostati) l'APK di release esce non firmato: serve solo a verificare la build
+    val ks = System.getenv("KEYSTORE_PATH")?.let { file(it) }?.takeIf { it.exists() }
     signingConfigs {
-        create("release") {
-            val ks = System.getenv("KEYSTORE_PATH")
-            if (ks != null && file(ks).exists()) {
-                storeFile = file(ks)
-                storePassword = System.getenv("KEYSTORE_PASS")
-                keyAlias = "drivehub"
-                keyPassword = System.getenv("KEYSTORE_PASS")
-            } else {
-                // Senza chiave (build locale) si firma con la chiave di debug
-                val dbg = signingConfigs.getByName("debug")
-                storeFile = dbg.storeFile
-                storePassword = dbg.storePassword
-                keyAlias = dbg.keyAlias
-                keyPassword = dbg.keyPassword
-            }
+        if (ks != null) create("release") {
+            storeFile = ks
+            storePassword = System.getenv("KEYSTORE_PASS")
+            keyAlias = "drivehub"
+            keyPassword = System.getenv("KEYSTORE_PASS")
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
