@@ -1,3 +1,6 @@
+Versione 3.8.3 (7 novembre 2026)
+• Pulsante "Diagnosi Android Auto" (Altro › Permessi e Android Auto): se DriveHub non compare nel menu di Android Auto, legge con Shizuku il motivo dal registro del telefono e lo salva nel rapporto "diagnosi-aa".
+
 Versione 3.8.2 (7 novembre 2026)
 • Rapporti più completi: ognuno contiene anche lo stato dell'app in quel momento (permessi, versione di Android Auto, schermo DriveHub già aperto in auto o no, lettore in Android Auto, Shizuku, accessibilità, tipo e stato dell'adattatore OBD, dashcam, quanti viaggi, rifornimenti e scadenze ci sono). Niente indirizzi né posizione.
 

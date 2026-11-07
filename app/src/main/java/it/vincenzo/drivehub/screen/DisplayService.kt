@@ -29,6 +29,8 @@ object DisplayProtocol {
     const val KEY = 5
     const val LAUNCH = 6
     const val RESIZE = 7
+    /** Diagnosi di Android Auto: righe utili del registro di sistema (comando fisso, nessun comando arbitrario) */
+    const val DIAG = 8
     /** Chiamata "destroy" che Shizuku invia ai propri servizi utente */
     const val DESTROY = 16777115
 }
@@ -70,6 +72,7 @@ class DisplayService(base: Context) : Binder() {
                     reply?.writeNoException()
                 }
                 DisplayProtocol.LAUNCH -> { val out = launch(data.readString().orEmpty()); reply?.writeNoException(); reply?.writeString(out) }
+                DisplayProtocol.DIAG -> { val out = diagnose(); reply?.writeNoException(); reply?.writeString(out) }
                 else -> return super.onTransact(code, data, reply, flags)
             }
         } catch (e: Throwable) {
@@ -108,6 +111,26 @@ class DisplayService(base: Context) : Binder() {
         val out = p.inputStream.bufferedReader().readText()
         p.waitFor()
         return out.trim()
+    }
+
+    /**
+     * Perché Android Auto mostra o scarta DriveHub: righe del logcat (la shell può leggerlo) su validatore delle app
+     * e Car App Library, più i servizi di DriveHub visti dal sistema.
+     */
+    private fun diagnose(): String {
+        fun run(vararg cmd: String) = runCatching {
+            val p = ProcessBuilder(*cmd).redirectErrorStream(true).start()
+            val out = p.inputStream.bufferedReader().readText()
+            p.waitFor()
+            out
+        }.getOrElse { "errore: ${it.message}" }
+        val keys = listOf("drivehub", "VALIDATOR", "CarApp", "car.app", "CarAppService")
+        val log = run("logcat", "-d", "-v", "time", "-t", "30000").lineSequence()
+            .filter { l -> keys.any { l.contains(it, ignoreCase = true) } }.toList().takeLast(400)
+        val pkg = run("dumpsys", "package", "it.vincenzo.drivehub").lineSequence()
+            .filter { l -> listOf("Service", "versionName", "installer", "enabled", "targetSdk", "androidx.car").any { it in l } }
+            .toList().take(80)
+        return "== logcat (${log.size} righe) ==\n" + log.joinToString("\n") + "\n== dumpsys package ==\n" + pkg.joinToString("\n")
     }
 
     // Iniezione input con API nascoste (consentite alla shell)
@@ -215,4 +238,5 @@ class DisplayClient(private val binder: IBinder) {
         call(DisplayProtocol.SWIPE, { it.writeFloat(x1); it.writeFloat(y1); it.writeFloat(x2); it.writeFloat(y2); it.writeLong(ms) }) {}
     fun key(code: Int) = call(DisplayProtocol.KEY, { it.writeInt(code) }) {}
     fun launch(component: String): String = call(DisplayProtocol.LAUNCH, { it.writeString(component) }) { it.readString().orEmpty() }
+    fun diagnose(): String = call(DisplayProtocol.DIAG, {}) { it.readString().orEmpty() }
 }

@@ -200,7 +200,7 @@ private fun AutoTab(permTick: Int, askPermissions: () -> Unit, goTo: (Tab) -> Un
         Section("Prima di partire", Icons.Default.CheckCircle) {
             Step(perms, "Permessi", "Posizione, Bluetooth, notifiche, fotocamera, microfono.", "Concedi", askPermissions)
             Step(carSeen, "DriveHub in Android Auto", "Lo schermo DriveHub non si è ancora aperto in auto.", "Come fare") { showAaHelp = !showAaHelp }
-            if (showAaHelp && !carSeen) { AndroidAutoHelp(); MusicInAndroidAuto() }
+            if (showAaHelp && !carSeen) { AndroidAutoHelp(); MusicInAndroidAuto(); AutoDiagnosisButton() }
             Step(screenReady, "Schermo come tablet", "Avvia Shizuku, oppure attiva lo specchio qui sotto.", "Apri Shizuku") { openShizuku(ctx) }
             Step(obdChosen, "Adattatore OBD", "Scegli come è collegato l'adattatore.", "Scegli") { goTo(Tab.DIAGNOSI) }
         }
@@ -265,6 +265,19 @@ private fun AndroidAutoHelp() {
             "5. In auto apri DriveHub: la spunta qui compare da sola.",
         style = MaterialTheme.typography.bodyMedium,
     )
+}
+
+/** Se DriveHub non compare nel menu di Android Auto: legge il motivo dal registro di sistema (serve Shizuku) */
+@Composable
+private fun AutoDiagnosisButton() {
+    val ctx = LocalContext.current
+    var msg by remember { mutableStateOf("") }
+    OutlinedButton(onClick = {
+        msg = "Diagnosi in corso…"
+        it.vincenzo.drivehub.screen.AutoDiagnosis.run(ctx) { m -> msg = m }
+    }) { Text("Diagnosi Android Auto") }
+    Text(if (msg.isNotEmpty()) msg else "Se DriveHub non compare nel menu: apri prima Personalizza menu Avvio app in Android Auto, poi tocca qui.",
+        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 /** Il lettore musicale nel menu di Android Auto: acceso, nasconde lo schermo DriveHub (una sola voce per app) */
@@ -527,6 +540,7 @@ private fun AltroTab(askPermissions: () -> Unit) {
         OutlinedButton(onClick = askPermissions) { Text("Concedi i permessi") }
         AndroidAutoHelp()
         MusicInAndroidAuto()
+        AutoDiagnosisButton()
     }
 
     Section("Rapporti", Icons.Default.Info) {
