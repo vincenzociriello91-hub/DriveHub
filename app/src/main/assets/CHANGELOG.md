@@ -1,3 +1,10 @@
+Versione 3.5.0 (7 novembre 2026)
+• OBDTool è confluito in DriveHub: tutta la diagnostica ora è qui.
+• Codici errore memorizzati, in attesa e permanenti, con quasi 300 spiegazioni in italiano che si aggiornano da sole.
+• Tocca un codice nell'app per cercarlo sul web.
+• Info auto: numero di telaio (VIN), protocollo e modello dell'adattatore.
+• Temperatura dell'olio nel cruscotto (se l'auto la fornisce).
+
 Versione 3.4.0 (7 novembre 2026)
 • Adattatori OBD con ogni collegamento: Bluetooth classico, Bluetooth LE (Vgate iCar Pro BLE, OBDLink CX e simili, con la ricerca nell'app), Wi-Fi e cavo USB (OTG).
 • Nella sezione OBD trovi la spiegazione di ogni collegamento e quale usare con Android Auto via cavo o senza fili.

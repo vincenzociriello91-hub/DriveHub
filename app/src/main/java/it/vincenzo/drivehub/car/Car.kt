@@ -163,7 +163,7 @@ class ObdScreen(ctx: CarContext) : ObdBoundScreen(ctx) {
         } else {
             pane.addRow(Row.Builder().setTitle("${fmt(v["0D"])} km/h · ${fmt(v["0C"])} giri/min").build())
             pane.addRow(Row.Builder().setTitle("Consumo ${fmt(v["L100"], 1)} l/100 km · ${fmt(v["LH"], 1)} l/h").build())
-            pane.addRow(Row.Builder().setTitle("Liquido ${fmt(v["05"])}°C · Aria ${fmt(v["0F"])}°C").build())
+            pane.addRow(Row.Builder().setTitle("Liquido ${fmt(v["05"])}°C · Olio ${fmt(v["5C"])}°C · Aria ${fmt(v["0F"])}°C").build())
             pane.addRow(Row.Builder().setTitle("Batteria ${fmt(v["V"], 1)} V · Carico ${fmt(v["04"])}% · Serbatoio ${fmt(v["2F"])}%")
                 .addText(if (s.connected) "Collegato" else s.status).build())
         }
@@ -191,10 +191,11 @@ class DtcScreen(ctx: CarContext) : ObdBoundScreen(ctx) {
     override fun onGetTemplate(): Template {
         val s = ObdManager.state.value
         if (!s.connected) return message("Adattatore OBD non collegato.\n${s.status}")
-        val codes = s.dtcs ?: return ListTemplate.Builder().setTitle("Errori motore").setHeaderAction(Action.BACK).setLoading(true).build()
+        val stored = s.dtcs ?: return ListTemplate.Builder().setTitle("Errori motore").setHeaderAction(Action.BACK).setLoading(true).build()
+        val codes = stored.map { it to it } + s.pending.map { it to "$it · in attesa" } + s.permanent.map { it to "$it · permanente" }
         if (codes.isEmpty()) return message("Nessun codice di errore memorizzato.")
         val list = ItemList.Builder()
-        codes.take(6).forEach { list.addItem(Row.Builder().setTitle(it).addText(DtcInfo.describe(it)).build()) }
+        codes.take(6).forEach { (code, title) -> list.addItem(Row.Builder().setTitle(title).addText(DtcInfo.describe(code)).build()) }
         return ListTemplate.Builder().setTitle("Errori motore (${codes.size})").setHeaderAction(Action.BACK).setSingleList(list.build()).build()
     }
 }

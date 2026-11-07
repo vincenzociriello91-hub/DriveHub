@@ -1,0 +1,293 @@
+# versione: 2026-11-01
+# Significato dei codici errore OBD-II per DriveHub (ereditato da OBDTool). Indicativo: non sostituisce un meccanico.
+P0010	Attuatore albero a camme A (banco 1): circuito	SAE J2012
+P0011	Albero a camme A (banco 1): anticipo eccessivo o prestazioni del sistema	SAE J2012
+P0012	Albero a camme A (banco 1): ritardo eccessivo	SAE J2012
+P0016	Correlazione posizione albero motore / albero a camme (banco 1, sensore A)	SAE J2012
+P0017	Correlazione posizione albero motore / albero a camme (banco 1, sensore B)	https://ricksfreeautorepairadvice.com/generic-obdii-p-code-list-p0001-p0099/
+P0020	Attuatore albero a camme A (banco 2): circuito	SAE J2012
+P0021	Albero a camme A (banco 2): anticipo eccessivo o prestazioni del sistema	SAE J2012
+P0022	Albero a camme A (banco 2): ritardo eccessivo	SAE J2012
+P0030	Sonda lambda banco 1 sensore 1: circuito di comando del riscaldatore	https://ricksfreeautorepairadvice.com/generic-obdii-p-code-list-p0001-p0099/
+P0036	Sonda lambda banco 1 sensore 2: circuito di comando del riscaldatore	https://ricksfreeautorepairadvice.com/generic-obdii-p-code-list-p0001-p0099/
+P0068	Correlazione tra MAP/MAF e posizione della farfalla	https://ricksfreeautorepairadvice.com/generic-obdii-p-code-list-p0001-p0099/
+P0069	Correlazione tra pressione collettore (MAP) e pressione barometrica	https://ricksfreeautorepairadvice.com/generic-obdii-p-code-list-p0001-p0099/
+P0087	Pressione del rail / impianto carburante troppo bassa	SAE J2012
+P0088	Pressione del rail / impianto carburante troppo alta	SAE J2012
+P0089	Regolatore pressione carburante: prestazioni	SAE J2012
+P0093	Rilevata grande perdita nell'impianto carburante	SAE J2012
+P0100	Sensore flusso aria (MAF): circuito	SAE J2012
+P0101	Sensore flusso aria (MAF): fuori campo o prestazioni	SAE J2012
+P0102	Sensore flusso aria (MAF): segnale basso	SAE J2012
+P0103	Sensore flusso aria (MAF): segnale alto	SAE J2012
+P0104	Sensore flusso aria (MAF): segnale intermittente	SAE J2012
+P0105	Sensore pressione collettore (MAP) o barometrica: circuito	SAE J2012
+P0106	Sensore pressione collettore (MAP) o barometrica: fuori campo o prestazioni	SAE J2012
+P0107	Sensore pressione collettore (MAP) o barometrica: segnale basso	SAE J2012
+P0108	Sensore pressione collettore (MAP) o barometrica: segnale alto	SAE J2012
+P0109	Sensore pressione collettore (MAP) o barometrica: segnale intermittente	SAE J2012
+P0110	Sensore temperatura aria aspirata: circuito	SAE J2012
+P0111	Sensore temperatura aria aspirata: fuori campo o prestazioni	SAE J2012
+P0112	Sensore temperatura aria aspirata: segnale basso	SAE J2012
+P0113	Sensore temperatura aria aspirata: segnale alto	SAE J2012
+P0114	Sensore temperatura aria aspirata: segnale intermittente	SAE J2012
+P0115	Sensore temperatura liquido di raffreddamento: circuito	SAE J2012
+P0116	Sensore temperatura liquido di raffreddamento: fuori campo o prestazioni	SAE J2012
+P0117	Sensore temperatura liquido di raffreddamento: segnale basso	SAE J2012
+P0118	Sensore temperatura liquido di raffreddamento: segnale alto	SAE J2012
+P0119	Sensore temperatura liquido di raffreddamento: segnale intermittente	SAE J2012
+P0120	Sensore posizione farfalla/pedale A: circuito	SAE J2012
+P0121	Sensore posizione farfalla/pedale A: fuori campo o prestazioni	SAE J2012
+P0122	Sensore posizione farfalla/pedale A: segnale basso	SAE J2012
+P0123	Sensore posizione farfalla/pedale A: segnale alto	SAE J2012
+P0124	Sensore posizione farfalla/pedale A: segnale intermittente	SAE J2012
+P0125	Temperatura del liquido insufficiente per il controllo della miscela a circuito chiuso	SAE J2012
+P0128	Termostato: temperatura del liquido sotto la temperatura di regolazione	SAE J2012
+P0130	Sonda lambda banco 1 sensore 1: circuito	SAE J2012
+P0131	Sonda lambda banco 1 sensore 1: tensione bassa	SAE J2012
+P0132	Sonda lambda banco 1 sensore 1: tensione alta	SAE J2012
+P0133	Sonda lambda banco 1 sensore 1: risposta lenta	SAE J2012
+P0134	Sonda lambda banco 1 sensore 1: nessuna attività	SAE J2012
+P0135	Sonda lambda banco 1 sensore 1: circuito del riscaldatore	SAE J2012
+P0136	Sonda lambda banco 1 sensore 2: circuito	SAE J2012
+P0137	Sonda lambda banco 1 sensore 2: tensione bassa	SAE J2012
+P0138	Sonda lambda banco 1 sensore 2: tensione alta	SAE J2012
+P0139	Sonda lambda banco 1 sensore 2: risposta lenta	SAE J2012
+P013A	Sonda lambda banco 1 sensore 2: nessuna attività	SAE J2012
+P013B	Sonda lambda banco 1 sensore 2: circuito del riscaldatore	SAE J2012
+P0142	Sonda lambda banco 1 sensore 3: circuito	SAE J2012
+P0143	Sonda lambda banco 1 sensore 3: tensione bassa	SAE J2012
+P0144	Sonda lambda banco 1 sensore 3: tensione alta	SAE J2012
+P0145	Sonda lambda banco 1 sensore 3: risposta lenta	SAE J2012
+P0146	Sonda lambda banco 1 sensore 3: nessuna attività	SAE J2012
+P0147	Sonda lambda banco 1 sensore 3: circuito del riscaldatore	SAE J2012
+P0150	Sonda lambda banco 2 sensore 1: circuito	SAE J2012
+P0151	Sonda lambda banco 2 sensore 1: tensione bassa	SAE J2012
+P0152	Sonda lambda banco 2 sensore 1: tensione alta	SAE J2012
+P0153	Sonda lambda banco 2 sensore 1: risposta lenta	SAE J2012
+P0154	Sonda lambda banco 2 sensore 1: nessuna attività	SAE J2012
+P0155	Sonda lambda banco 2 sensore 1: circuito del riscaldatore	SAE J2012
+P0156	Sonda lambda banco 2 sensore 2: circuito	SAE J2012
+P0157	Sonda lambda banco 2 sensore 2: tensione bassa	SAE J2012
+P0158	Sonda lambda banco 2 sensore 2: tensione alta	SAE J2012
+P0159	Sonda lambda banco 2 sensore 2: risposta lenta	SAE J2012
+P015A	Sonda lambda banco 2 sensore 2: nessuna attività	SAE J2012
+P015B	Sonda lambda banco 2 sensore 2: circuito del riscaldatore	SAE J2012
+P0162	Sonda lambda banco 2 sensore 3: circuito	SAE J2012
+P0163	Sonda lambda banco 2 sensore 3: tensione bassa	SAE J2012
+P0164	Sonda lambda banco 2 sensore 3: tensione alta	SAE J2012
+P0165	Sonda lambda banco 2 sensore 3: risposta lenta	SAE J2012
+P0166	Sonda lambda banco 2 sensore 3: nessuna attività	SAE J2012
+P0167	Sonda lambda banco 2 sensore 3: circuito del riscaldatore	SAE J2012
+P0170	Correzione carburante (banco 1): malfunzionamento	SAE J2012
+P0171	Miscela troppo magra (banco 1)	SAE J2012
+P0172	Miscela troppo grassa (banco 1)	SAE J2012
+P0173	Correzione carburante (banco 2): malfunzionamento	SAE J2012
+P0174	Miscela troppo magra (banco 2)	SAE J2012
+P0175	Miscela troppo grassa (banco 2)	SAE J2012
+P0180	Sensore temperatura carburante A: circuito	SAE J2012
+P0181	Sensore temperatura carburante A: fuori campo o prestazioni	SAE J2012
+P0182	Sensore temperatura carburante A: segnale basso	SAE J2012
+P0183	Sensore temperatura carburante A: segnale alto	SAE J2012
+P0184	Sensore temperatura carburante A: segnale intermittente	SAE J2012
+P0190	Sensore pressione del rail (common rail): circuito	SAE J2012
+P0191	Sensore pressione del rail (common rail): fuori campo o prestazioni	SAE J2012
+P0192	Sensore pressione del rail (common rail): segnale basso	SAE J2012
+P0193	Sensore pressione del rail (common rail): segnale alto	SAE J2012
+P0194	Sensore pressione del rail (common rail): segnale intermittente	SAE J2012
+P0200	Circuito iniettori	SAE J2012
+P0201	Iniettore cilindro 1: circuito	SAE J2012
+P0202	Iniettore cilindro 2: circuito	SAE J2012
+P0203	Iniettore cilindro 3: circuito	SAE J2012
+P0204	Iniettore cilindro 4: circuito	SAE J2012
+P0205	Iniettore cilindro 5: circuito	SAE J2012
+P0206	Iniettore cilindro 6: circuito	SAE J2012
+P0207	Iniettore cilindro 7: circuito	SAE J2012
+P0208	Iniettore cilindro 8: circuito	SAE J2012
+P0209	Iniettore cilindro 9: circuito	SAE J2012
+P020A	Iniettore cilindro 10: circuito	SAE J2012
+P020B	Iniettore cilindro 11: circuito	SAE J2012
+P020C	Iniettore cilindro 12: circuito	SAE J2012
+P0217	Surriscaldamento del motore	SAE J2012
+P0219	Regime motore oltre il limite (fuorigiri)	SAE J2012
+P0220	Sensore posizione farfalla/pedale B: circuito	SAE J2012
+P0221	Sensore posizione farfalla/pedale B: fuori campo o prestazioni	SAE J2012
+P0222	Sensore posizione farfalla/pedale B: segnale basso	SAE J2012
+P0223	Sensore posizione farfalla/pedale B: segnale alto	SAE J2012
+P0224	Sensore posizione farfalla/pedale B: segnale intermittente	SAE J2012
+P0225	Sensore posizione farfalla/pedale C: circuito	SAE J2012
+P0226	Sensore posizione farfalla/pedale C: fuori campo o prestazioni	SAE J2012
+P0227	Sensore posizione farfalla/pedale C: segnale basso	SAE J2012
+P0228	Sensore posizione farfalla/pedale C: segnale alto	SAE J2012
+P0229	Sensore posizione farfalla/pedale C: segnale intermittente	SAE J2012
+P0230	Pompa carburante: circuito primario	SAE J2012
+P0234	Sovralimentazione turbo eccessiva (overboost)	SAE J2012
+P0261	Iniettore cilindro 1: circuito basso	SAE J2012
+P0262	Iniettore cilindro 1: circuito alto	SAE J2012
+P0263	Iniettore cilindro 1: contributo o equilibrio	SAE J2012
+P0264	Iniettore cilindro 2: circuito basso	SAE J2012
+P0265	Iniettore cilindro 2: circuito alto	SAE J2012
+P0266	Iniettore cilindro 2: contributo o equilibrio	SAE J2012
+P0267	Iniettore cilindro 3: circuito basso	SAE J2012
+P0268	Iniettore cilindro 3: circuito alto	SAE J2012
+P0269	Iniettore cilindro 3: contributo o equilibrio	SAE J2012
+P026A	Iniettore cilindro 4: circuito basso	SAE J2012
+P026B	Iniettore cilindro 4: circuito alto	SAE J2012
+P026C	Iniettore cilindro 4: contributo o equilibrio	SAE J2012
+P026D	Iniettore cilindro 5: circuito basso	SAE J2012
+P026E	Iniettore cilindro 5: circuito alto	SAE J2012
+P026F	Iniettore cilindro 5: contributo o equilibrio	SAE J2012
+P0270	Iniettore cilindro 6: circuito basso	SAE J2012
+P0271	Iniettore cilindro 6: circuito alto	SAE J2012
+P0272	Iniettore cilindro 6: contributo o equilibrio	SAE J2012
+P0273	Iniettore cilindro 7: circuito basso	SAE J2012
+P0274	Iniettore cilindro 7: circuito alto	SAE J2012
+P0275	Iniettore cilindro 7: contributo o equilibrio	SAE J2012
+P0276	Iniettore cilindro 8: circuito basso	SAE J2012
+P0277	Iniettore cilindro 8: circuito alto	SAE J2012
+P0278	Iniettore cilindro 8: contributo o equilibrio	SAE J2012
+P0279	Iniettore cilindro 9: circuito basso	SAE J2012
+P027A	Iniettore cilindro 9: circuito alto	SAE J2012
+P027B	Iniettore cilindro 9: contributo o equilibrio	SAE J2012
+P027C	Iniettore cilindro 10: circuito basso	SAE J2012
+P027D	Iniettore cilindro 10: circuito alto	SAE J2012
+P027E	Iniettore cilindro 10: contributo o equilibrio	SAE J2012
+P027F	Iniettore cilindro 11: circuito basso	SAE J2012
+P0280	Iniettore cilindro 11: circuito alto	SAE J2012
+P0281	Iniettore cilindro 11: contributo o equilibrio	SAE J2012
+P0282	Iniettore cilindro 12: circuito basso	SAE J2012
+P0283	Iniettore cilindro 12: circuito alto	SAE J2012
+P0284	Iniettore cilindro 12: contributo o equilibrio	SAE J2012
+P0299	Sovralimentazione turbo insufficiente (underboost)	SAE J2012
+P0300	Mancate accensioni casuali o su più cilindri	SAE J2012
+P0301	Mancata accensione nel cilindro 1	SAE J2012
+P0302	Mancata accensione nel cilindro 2	SAE J2012
+P0303	Mancata accensione nel cilindro 3	SAE J2012
+P0304	Mancata accensione nel cilindro 4	SAE J2012
+P0305	Mancata accensione nel cilindro 5	SAE J2012
+P0306	Mancata accensione nel cilindro 6	SAE J2012
+P0307	Mancata accensione nel cilindro 7	SAE J2012
+P0308	Mancata accensione nel cilindro 8	SAE J2012
+P0309	Mancata accensione nel cilindro 9	SAE J2012
+P030A	Mancata accensione nel cilindro 10	SAE J2012
+P030B	Mancata accensione nel cilindro 11	SAE J2012
+P030C	Mancata accensione nel cilindro 12	SAE J2012
+P0325	Sensore di battito 1 (banco 1): circuito	SAE J2012
+P0326	Sensore di battito 1 (banco 1): fuori campo o prestazioni	SAE J2012
+P0327	Sensore di battito 1 (banco 1): segnale basso	SAE J2012
+P0328	Sensore di battito 1 (banco 1): segnale alto	SAE J2012
+P0329	Sensore di battito 1 (banco 1): segnale intermittente	SAE J2012
+P0330	Sensore di battito 2 (banco 2): circuito	SAE J2012
+P0331	Sensore di battito 2 (banco 2): fuori campo o prestazioni	SAE J2012
+P0332	Sensore di battito 2 (banco 2): segnale basso	SAE J2012
+P0333	Sensore di battito 2 (banco 2): segnale alto	SAE J2012
+P0334	Sensore di battito 2 (banco 2): segnale intermittente	SAE J2012
+P0335	Sensore posizione albero motore A: circuito	SAE J2012
+P0336	Sensore posizione albero motore A: fuori campo o prestazioni	SAE J2012
+P0337	Sensore posizione albero motore A: segnale basso	SAE J2012
+P0338	Sensore posizione albero motore A: segnale alto	SAE J2012
+P0339	Sensore posizione albero motore A: segnale intermittente	SAE J2012
+P0340	Sensore posizione albero a camme A (banco 1): circuito	SAE J2012
+P0341	Sensore posizione albero a camme A (banco 1): fuori campo o prestazioni	SAE J2012
+P0342	Sensore posizione albero a camme A (banco 1): segnale basso	SAE J2012
+P0343	Sensore posizione albero a camme A (banco 1): segnale alto	SAE J2012
+P0344	Sensore posizione albero a camme A (banco 1): segnale intermittente	SAE J2012
+P0345	Sensore posizione albero a camme A (banco 2): circuito	SAE J2012
+P0346	Sensore posizione albero a camme A (banco 2): fuori campo o prestazioni	SAE J2012
+P0347	Sensore posizione albero a camme A (banco 2): segnale basso	SAE J2012
+P0348	Sensore posizione albero a camme A (banco 2): segnale alto	SAE J2012
+P0349	Sensore posizione albero a camme A (banco 2): segnale intermittente	SAE J2012
+P0351	Bobina di accensione A: circuito primario o secondario	SAE J2012
+P0352	Bobina di accensione B: circuito primario o secondario	SAE J2012
+P0353	Bobina di accensione C: circuito primario o secondario	SAE J2012
+P0354	Bobina di accensione D: circuito primario o secondario	SAE J2012
+P0355	Bobina di accensione E: circuito primario o secondario	SAE J2012
+P0356	Bobina di accensione F: circuito primario o secondario	SAE J2012
+P0357	Bobina di accensione G: circuito primario o secondario	SAE J2012
+P0358	Bobina di accensione H: circuito primario o secondario	SAE J2012
+P0359	Bobina di accensione I: circuito primario o secondario	SAE J2012
+P035A	Bobina di accensione J: circuito primario o secondario	SAE J2012
+P035B	Bobina di accensione K: circuito primario o secondario	SAE J2012
+P035C	Bobina di accensione L: circuito primario o secondario	SAE J2012
+P0380	Candelette di preriscaldamento A: circuito	SAE J2012
+P0400	Ricircolo gas di scarico (EGR): flusso	SAE J2012
+P0401	Ricircolo gas di scarico (EGR): flusso insufficiente	SAE J2012
+P0402	Ricircolo gas di scarico (EGR): flusso eccessivo	SAE J2012
+P0403	Ricircolo gas di scarico (EGR): circuito	SAE J2012
+P0404	Ricircolo gas di scarico (EGR): fuori campo o prestazioni	SAE J2012
+P0410	Iniezione aria secondaria: malfunzionamento	SAE J2012
+P0420	Efficienza del catalizzatore sotto la soglia (banco 1)	SAE J2012
+P0421	Efficienza del catalizzatore in fase di riscaldamento sotto la soglia (banco 1)	SAE J2012
+P0430	Efficienza del catalizzatore sotto la soglia (banco 2)	SAE J2012
+P0431	Efficienza del catalizzatore in fase di riscaldamento sotto la soglia (banco 2)	SAE J2012
+P0440	Controllo emissioni evaporative (EVAP): malfunzionamento	SAE J2012
+P0441	Controllo emissioni evaporative (EVAP): flusso di spurgo errato	SAE J2012
+P0442	Controllo emissioni evaporative (EVAP): piccola perdita	SAE J2012
+P0443	Controllo emissioni evaporative (EVAP): circuito valvola di spurgo	SAE J2012
+P0446	Controllo emissioni evaporative (EVAP): circuito di sfiato	SAE J2012
+P0455	Controllo emissioni evaporative (EVAP): grande perdita	SAE J2012
+P0456	Controllo emissioni evaporative (EVAP): perdita molto piccola	SAE J2012
+P0470	Sensore pressione gas di scarico A: circuito	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0400-p0499/
+P0471	Sensore pressione gas di scarico A: fuori campo o prestazioni	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0400-p0499/
+P0472	Sensore pressione gas di scarico A: segnale basso	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0400-p0499/
+P0473	Sensore pressione gas di scarico A: segnale alto	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0400-p0499/
+P0480	Ventola di raffreddamento 1: circuito di comando	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0400-p0499/
+P0500	Sensore velocità veicolo A	SAE J2012
+P0501	Sensore velocità veicolo A: fuori campo o prestazioni	SAE J2012
+P0502	Sensore velocità veicolo A: segnale basso	SAE J2012
+P0503	Sensore velocità veicolo A: segnale intermittente o irregolare	SAE J2012
+P0505	Controllo del regime minimo: malfunzionamento	SAE J2012
+P0506	Regime minimo più basso del previsto	SAE J2012
+P0507	Regime minimo più alto del previsto	SAE J2012
+P0544	Sensore temperatura gas di scarico (banco 1 sensore 1): circuito	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0500-p0599/
+P0545	Sensore temperatura gas di scarico (banco 1 sensore 1): segnale basso	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0500-p0599/
+P0546	Sensore temperatura gas di scarico (banco 1 sensore 1): segnale alto	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0500-p0599/
+P0560	Tensione dell'impianto elettrico	SAE J2012
+P0562	Tensione dell'impianto elettrico bassa	SAE J2012
+P0563	Tensione dell'impianto elettrico alta	SAE J2012
+P0600	Collegamento di comunicazione seriale	SAE J2012
+P0601	Centralina: errore della memoria (checksum)	SAE J2012
+P0602	Centralina: errore di programmazione	SAE J2012
+P0603	Centralina: errore della memoria permanente (KAM)	SAE J2012
+P0604	Centralina: errore della memoria RAM	SAE J2012
+P0605	Centralina: errore della memoria ROM	SAE J2012
+P0606	Centralina: errore del processore	SAE J2012
+P0627	Pompa carburante A: circuito di comando aperto	https://ricksfreeautorepairadvice.com/generic-obdii-p-codes-p0600-p0699-definitions-and-causes/
+P0670	Modulo candelette di preriscaldamento: circuito	SAE J2012
+P0671	Candeletta cilindro 1: circuito	SAE J2012
+P0672	Candeletta cilindro 2: circuito	SAE J2012
+P0673	Candeletta cilindro 3: circuito	SAE J2012
+P0674	Candeletta cilindro 4: circuito	SAE J2012
+P0675	Candeletta cilindro 5: circuito	SAE J2012
+P0676	Candeletta cilindro 6: circuito	SAE J2012
+P0677	Candeletta cilindro 7: circuito	SAE J2012
+P0678	Candeletta cilindro 8: circuito	SAE J2012
+P0700	Sistema di controllo del cambio (leggi i codici della centralina del cambio)	SAE J2012
+P0715	Sensore velocità turbina / albero d'ingresso del cambio	SAE J2012
+P0720	Sensore velocità albero d'uscita del cambio	SAE J2012
+P0730	Rapporto del cambio errato	SAE J2012
+P0731	Rapporto errato in 1ª marcia	SAE J2012
+P0732	Rapporto errato in 2ª marcia	SAE J2012
+P0733	Rapporto errato in 3ª marcia	SAE J2012
+P0734	Rapporto errato in 4ª marcia	SAE J2012
+P0735	Rapporto errato in 5ª marcia	SAE J2012
+P0736	Rapporto errato in retromarcia	SAE J2012
+P0740	Frizione del convertitore di coppia: circuito	SAE J2012
+P2002	Filtro antiparticolato (banco 1): efficienza sotto la soglia	SAE J2012
+P2096	Correzione carburante dopo il catalizzatore: miscela troppo magra (banco 1)	https://www.kbb.com/obd-ii/p2096
+P2097	Correzione carburante dopo il catalizzatore: miscela troppo grassa (banco 1)	https://autos.yahoo.com/ownership/articles/p2097-engine-code-explained-causes-204500208.html
+P2279	Perdita d'aria nell'impianto di aspirazione	https://repairpal.com/obd-ii-code-p2279
+P242F	Filtro antiparticolato: restrizione per accumulo di cenere	SAE J2012
+P2452	Sensore pressione filtro antiparticolato (DPF) A: circuito	https://repairpal.com/obd-ii-code-p2452-diesel-particulate-filter-pressure-sensor-a-circuit
+P2453	Sensore pressione filtro antiparticolato (DPF) A: fuori campo o prestazioni	https://partsavatar.ca/p2453-obd-ii-trouble-code-diesel-particulate-filter-pressure-sensor-a-circuit-range-performance
+P2454	Sensore pressione filtro antiparticolato (DPF) A: segnale basso	https://repairpal.com/obd-ii-code-p2454-diesel-particulate-filter-pressure-sensor-a-circuit-low
+P2455	Sensore pressione filtro antiparticolato (DPF) A: segnale alto	https://partsavatar.ca/p2455-obd-ii-trouble-code-diesel-particulate-filter-pressure-sensor-a-circuit-high-solution
+P2459	Filtro antiparticolato: rigenerazioni troppo frequenti	SAE J2012
+P2463	Filtro antiparticolato: accumulo di fuliggine	SAE J2012
+U0001	Bus di comunicazione CAN ad alta velocità	SAE J2012
+U0073	Bus di comunicazione A delle centraline spento	SAE J2012
+U0100	Comunicazione persa con la centralina motore (ECM/PCM)	SAE J2012
+U0101	Comunicazione persa con la centralina del cambio (TCM)	SAE J2012
+U0121	Comunicazione persa con la centralina ABS	SAE J2012
+U0140	Comunicazione persa con la centralina della carrozzeria (BCM)	SAE J2012
+U0155	Comunicazione persa con il quadro strumenti	SAE J2012

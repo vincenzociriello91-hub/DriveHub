@@ -41,6 +41,7 @@ import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.Updater
 import it.vincenzo.drivehub.obd.ObdManager
 import it.vincenzo.drivehub.obd.BleObd
+import androidx.compose.foundation.clickable
 import it.vincenzo.drivehub.ui.DriveHubTheme
 import it.vincenzo.drivehub.ui.Section
 import it.vincenzo.drivehub.ui.StatusChip
@@ -214,9 +215,20 @@ private fun Home() {
                 }
                 Text("$label: ${String.format(Locale.ITALY, "%.1f", v)}")
             }
+            obd.info.forEach { (k, v) -> Text("$k: $v") }
             obd.dtcs?.let { codes ->
-                if (codes.isEmpty()) Text("Nessun codice di errore")
-                codes.forEach { Text("$it · ${DtcInfo.describe(it)}") }
+                if (codes.isEmpty() && obd.pending.isEmpty() && obd.permanent.isEmpty()) Text("Nessun codice di errore")
+                val all = codes.map { it to "" } + obd.pending.map { it to " · in attesa" } + obd.permanent.map { it to " · permanente" }
+                all.forEach { (code, kind) ->
+                    // un tocco cerca il codice sul web
+                    Text(
+                        "$code$kind\n${DtcInfo.describe(code)}",
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=" + Uri.encode("$code Ford Fiesta"))))
+                        },
+                    )
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(enabled = device != null, onClick = { ObdManager.start(ctx) }) { Text("Prova") }

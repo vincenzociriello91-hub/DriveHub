@@ -27,4 +27,12 @@ class ObdParserTest {
     @Test fun dtcClassico() = assertEquals(listOf("P0133"), ObdParser.dtcs("43 01 33 00 00 00 00\r"))
 
     @Test fun dtcNessuno() = assertEquals(emptyList<String>(), ObdParser.dtcs("4300\r"))
+
+    @Test fun dtcInAttesa() = assertEquals(listOf("P0133"), ObdParser.dtcs("47 01 33 00 00 00 00\r", 0x07))
+
+    // VIN di prova inventato, su più righe come lo manda un ELM327 su CAN
+    @Test fun vin() = assertEquals("WF0AXXGAHA1234567",
+        ObdParser.vin("014\r0: 49 02 01 57 46 30\r1: 41 58 58 47 41 48 41\r2: 31 32 33 34 35 36 37\r"))
+
+    @Test fun protocollo() = assertEquals("CAN 11 bit, 500 kbaud", ObdParser.protocol("A6\r"))
 }

@@ -22,6 +22,9 @@ class FeaturesTest {
         assertEquals(Cmd.Fuel, VoiceCommands.parse("cerca la benzina"))
     }
 
+    @Test fun elencoCodici() =
+        assertEquals(mapOf("P0420" to "Catalizzatore"), DtcInfo.parse("# commento\nP0420\tCatalizzatore\tSAE J2012\n"))
+
     @Test fun descrizioneCodici() {
         assertEquals("Catalizzatore: efficienza sotto la soglia", DtcInfo.describe("P0420"))
         assertTrue(DtcInfo.describe("P0302").contains("cilindro 2"))

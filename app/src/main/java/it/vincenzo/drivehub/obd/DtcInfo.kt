@@ -1,10 +1,54 @@
 package it.vincenzo.drivehub.obd
 
+import android.content.Context
+import it.vincenzo.drivehub.core.Http
+import it.vincenzo.drivehub.core.Reports
+import java.io.File
+
 /**
  * Spiegazione in italiano dei codici errore OBD-II (SAE J2012).
- * Codici più comuni scritti a mano; per gli altri si descrive il sistema interessato dalla struttura del codice.
+ * Prima l'elenco codici.tsv (ereditato da OBDTool, aggiornato da solo dal repository una volta a settimana),
+ * poi i codici scritti qui, infine il sistema interessato ricavato dalla struttura del codice.
  */
 object DtcInfo {
+    private const val URL = "https://raw.githubusercontent.com/vincenzociriello91-hub/DriveHub/main/config/codici.tsv"
+    private const val WEEK_MS = 7 * 24 * 3600_000L
+
+    @Volatile private var db: Map<String, String> = emptyMap()
+
+    /** Righe "CODICE<tab>significato<tab>fonte"; le righe con # sono commenti */
+    fun parse(text: String): Map<String, String> = text.lineSequence()
+        .filter { it.isNotBlank() && !it.startsWith("#") }
+        .mapNotNull { l -> l.split('\t').takeIf { it.size >= 2 }?.let { it[0].trim().uppercase() to it[1].trim() } }
+        .toMap()
+
+    private fun copy(ctx: Context) = File(ctx.filesDir, "codici.tsv")
+
+    /** Carica la copia aggiornata se c'è, altrimenti quella dentro l'app */
+    fun load(ctx: Context) {
+        val text = runCatching { copy(ctx).takeIf { it.exists() }?.readText() }.getOrNull()
+            ?: runCatching { ctx.assets.open("codici.tsv").bufferedReader().use { it.readText() } }.getOrNull()
+        text?.let { parse(it) }?.takeIf { it.isNotEmpty() }?.let { db = it }
+    }
+
+    /** In background: scarica l'elenco aggiornato al massimo una volta a settimana */
+    fun refresh(ctx: Context) {
+        val f = copy(ctx)
+        if (f.exists() && System.currentTimeMillis() - f.lastModified() < WEEK_MS) return
+        try {
+            val tmp = File(ctx.cacheDir, "codici.tsv")
+            Http.download(URL, tmp)
+            val fresh = parse(tmp.readText())
+            if (fresh.size >= 100) {  // protezione da file vuoti o rovinati
+                tmp.copyTo(f, overwrite = true)
+                db = fresh
+                Reports.log("Elenco codici errore aggiornato: ${fresh.size} codici")
+            }
+        } catch (e: Exception) {
+            Reports.log("Aggiornamento elenco codici non riuscito: ${e.message}")
+        }
+    }
+
     private val known = mapOf(
         "P0010" to "Fasatura variabile aspirazione: circuito dell'attuatore",
         "P0011" to "Fasatura variabile aspirazione: troppo anticipata",
@@ -76,6 +120,7 @@ object DtcInfo {
 
     fun describe(code: String): String {
         val c = code.uppercase()
+        db[c]?.let { return it }
         known[c]?.let { return it }
         if (c.length != 5) return "Codice non standard"
         val n = c.substring(3).toIntOrNull()

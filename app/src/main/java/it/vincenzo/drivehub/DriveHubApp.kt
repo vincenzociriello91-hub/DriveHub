@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import it.vincenzo.drivehub.core.Notify
 import it.vincenzo.drivehub.core.Reports
+import it.vincenzo.drivehub.obd.DtcInfo
 
 class DriveHubApp : Application() {
     override fun onCreate() {
@@ -18,6 +19,8 @@ class DriveHubApp : Application() {
             previous?.uncaughtException(thread, e)
         }
         Reports.log("App avviata")
+        DtcInfo.load(this)
+        Thread { DtcInfo.refresh(this) }.start()
     }
 
     companion object {

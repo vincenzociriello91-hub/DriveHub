@@ -22,7 +22,14 @@ data class ObdState(
     val status: String = "Non connesso",
     val connected: Boolean = false,
     val values: Map<String, Double> = emptyMap(),
+    /** Codici memorizzati (modo 03); null mentre si aspetta una nuova lettura */
     val dtcs: List<String>? = null,
+    /** Codici in attesa (modo 07): guasti visti una volta, non ancora confermati */
+    val pending: List<String> = emptyList(),
+    /** Codici permanenti (modo 0A): non si cancellano finché la centralina non verifica la riparazione */
+    val permanent: List<String> = emptyList(),
+    /** Telaio, protocollo e adattatore, letti alla connessione */
+    val info: Map<String, String> = emptyMap(),
 )
 
 /** Connessione universale ELM327 (Bluetooth classico o Wi-Fi) con lettura continua dei PID */
@@ -37,6 +44,7 @@ object ObdManager {
         "11" to ("Farfalla" to "%"),
         "10" to ("Flusso aria (MAF)" to "g/s"),
         "2F" to ("Livello carburante" to "%"),
+        "5C" to ("Temperatura olio" to "°C"),
     )
     private val SPP: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
@@ -93,8 +101,13 @@ object ObdManager {
                 link = open(ctx, device)
                 for (cmd in listOf("ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0")) send(link, cmd, 3000)
                 send(link, "0100", 10_000) // la prima richiesta fa cercare il protocollo all'ELM
-                Reports.log("OBD connesso ($device)")
-                _state.value = _state.value.copy(status = "Connesso", connected = true)
+                val info = linkedMapOf<String, String>()
+                ObdParser.protocol(send(link, "ATDPN", 3000))?.let { info["Protocollo"] = it }
+                send(link, "ATI", 3000).lines().map { it.trim() }.lastOrNull { it.isNotEmpty() }?.let { info["Adattatore"] = it }
+                ObdParser.vin(send(link, "0902", 5000))?.let { info["Telaio (VIN)"] = it }
+                // il VIN è un dato personale: nel rapporto solo se è stato letto, non il valore
+                Reports.log("OBD connesso ($device) · ${info["Protocollo"] ?: "protocollo ?"} · ${info["Adattatore"] ?: "adattatore ?"} · VIN ${if ("Telaio (VIN)" in info) "letto" else "non disponibile"}")
+                _state.value = _state.value.copy(status = "Connesso", connected = true, info = info)
                 while (running) poll(link)
             } catch (e: Exception) {
                 if (!running) break
@@ -131,6 +144,8 @@ object ObdManager {
         }
         AlertMonitor.check(values)
         var dtcs = _state.value.dtcs
+        var pending = _state.value.pending
+        var permanent = _state.value.permanent
         val now = System.currentTimeMillis()
         if (now - lastAutoDtc > 300_000) {
             lastAutoDtc = now
@@ -143,11 +158,13 @@ object ObdManager {
         if (dtcRequested) {
             dtcRequested = false
             dtcs = ObdParser.dtcs(send(link, "03", 5000))
-            Reports.log("Codici errore letti: ${dtcs.ifEmpty { listOf("nessuno") }}")
+            pending = ObdParser.dtcs(send(link, "07", 5000), 0x07)
+            permanent = ObdParser.dtcs(send(link, "0A", 5000), 0x0A)
+            Reports.log("Codici errore: memorizzati ${dtcs.size}, in attesa ${pending.size}, permanenti ${permanent.size}")
             AlertMonitor.onDtcs(dtcs)
         }
         values.forEach { (k, v) -> Reports.extras["obd_$k"] = "%.1f".format(v) }
-        _state.value = _state.value.copy(values = values, dtcs = dtcs)
+        _state.value = _state.value.copy(values = values, dtcs = dtcs, pending = pending, permanent = permanent)
     }
 
     @SuppressLint("MissingPermission")
