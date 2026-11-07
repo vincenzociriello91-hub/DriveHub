@@ -63,16 +63,20 @@ import java.util.Locale
 
 /** Schermata iniziale del display dell'auto: barra con ora e stato, poi tutte le app del telefono */
 class LauncherActivity : ComponentActivity() {
+    // cresce a ogni ritorno sul launcher: riordina le app con le ultime usate in cima
+    private val resumes = androidx.compose.runtime.mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Reports.log("Launcher auto aperto sul display ${display?.displayId}")
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme(primary = CarColors.accent)) { LauncherScreen() }
+            MaterialTheme(colorScheme = darkColorScheme(primary = CarColors.accent)) { LauncherScreen(resumes.intValue) }
         }
     }
 
     override fun onResume() {
         super.onResume()
+        resumes.intValue++
         // la fotocamera in background si può avviare solo con un'app visibile: il launcher sull'auto lo è
         if (Prefs.autoDashcam(this)) DashcamService.start(this)
     }
@@ -81,12 +85,12 @@ class LauncherActivity : ComponentActivity() {
 private class AppEntry(val label: String, val component: ComponentName, val icon: ImageBitmap)
 
 @Composable
-private fun LauncherScreen() {
+private fun LauncherScreen(resumes: Int) {
     Column(
         Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(CarColors.bgTop, CarColors.bgBottom)))
     ) {
         TopBar()
-        AppGrid()
+        AppGrid(resumes)
     }
 }
 
@@ -123,11 +127,14 @@ private fun Pill(text: String, color: Color) {
 }
 
 @Composable
-private fun AppGrid() {
+private fun AppGrid(resumes: Int) {
     val ctx = LocalContext.current
     var apps by remember { mutableStateOf<List<AppEntry>?>(null) }
     LaunchedEffect(Unit) { apps = withContext(Dispatchers.IO) { loadApps(ctx) } }
-    val list = apps
+    val list = remember(apps, resumes) {
+        val recent = Prefs.recentApps(ctx)
+        apps?.sortedBy { a -> recent.indexOf(a.component.flattenToString()).let { if (it < 0) Int.MAX_VALUE else it } }
+    }
     if (list == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Caricamento app…", color = CarColors.muted) }
         return

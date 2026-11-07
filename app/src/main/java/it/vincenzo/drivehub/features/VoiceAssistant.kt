@@ -96,6 +96,14 @@ object VoiceAssistant {
             Cmd.Consumption -> Speech.say(consumption())
             Cmd.Engine -> Speech.say(engine())
             Cmd.Trip -> Speech.say(TripRecorder.summary())
+            is Cmd.Refuel -> {
+                Refuels.add(ctx, cmd.liters, cmd.price)
+                Speech.say("Segnato il rifornimento: ${f1(cmd.liters)} litri" +
+                    (cmd.price?.let { " a ${String.format(Locale.ITALY, "%.3f", it)} euro" } ?: "") + ". " + Refuels.rangeText(ctx))
+            }
+            Cmd.Range -> Speech.say(Refuels.rangeText(ctx))
+            Cmd.Parked -> Speech.say(parked(ctx))
+            Cmd.Maintenance -> Speech.say(AlertMonitor.summary(ctx))
             Cmd.Errors -> errors()
             Cmd.Fuel -> fuel(ctx)
             Cmd.Weather -> weather(ctx)
@@ -104,7 +112,8 @@ object VoiceAssistant {
             Cmd.Previous -> mediaKey(ctx, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
             is Cmd.Type -> ScreenController.typeText(cmd.text, cmd.submit)
             Cmd.SaveClip -> Speech.say(if (DashcamService.protectNow()) "Salvo la clip della dashcam" else "La dashcam è spenta")
-            is Cmd.Unknown -> Speech.say("Non ho capito. Puoi dire: apri un'app, scrivi, cerca, consumi, benzina, errori, motore, meteo, viaggio.")
+            is Cmd.Unknown -> Speech.say("Non ho capito. Puoi dire: apri un'app, scrivi, cerca, consumi, benzina, errori, motore, meteo, " +
+                "viaggio, autonomia, dove ho parcheggiato, quanto manca al tagliando, ho messo 30 litri a 1,85.")
         }
     }
 
@@ -134,6 +143,18 @@ object VoiceAssistant {
                 ScreenController.launch(android.content.ComponentName(ai.packageName, ai.name))
             }
         }
+    }
+
+    private fun parked(ctx: Context): String {
+        val p = Prefs.parking(ctx) ?: return "Non ho una posizione salvata: si salva da sola quando scolleghi il telefono dall'auto."
+        val time = java.text.SimpleDateFormat("HH:mm 'del' d MMMM", Locale.ITALY).format(java.util.Date(p.time))
+        val here = TripRecorder.lastLocation
+        val dist = here?.let {
+            val d = FloatArray(1)
+            android.location.Location.distanceBetween(it.latitude, it.longitude, p.lat, p.lon, d)
+            if (d[0] < 1000) ", a circa ${(d[0] / 10).toInt() * 10} metri da qui" else ", a ${f1(d[0] / 1000.0)} chilometri da qui"
+        } ?: ""
+        return "Auto lasciata alle $time$dist. La posizione è nella notifica del parcheggio e nell'app, scheda Viaggi."
     }
 
     private fun consumption(): String {

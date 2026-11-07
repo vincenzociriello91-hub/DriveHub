@@ -26,6 +26,10 @@ import it.vincenzo.drivehub.ui.Section
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.ui.Modifier
+import it.vincenzo.drivehub.features.AlertRules
+import it.vincenzo.drivehub.features.Refuels
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import it.vincenzo.drivehub.features.DashcamService
@@ -63,6 +67,31 @@ fun TripsSection() {
         trips.forEach { t ->
             Text("${date(t.start)} · ${f(t.km)} km · ${t.minutes} min · ${f(t.l100)} l/100 · € ${f(t.cost, 2)}")
         }
+    }
+}
+
+@Composable
+fun DeadlinesSection() {
+    val ctx = LocalContext.current
+    val dates = remember { Prefs.DEADLINES.associateWith { mutableStateOf(AlertRules.formatDate(Prefs.deadline(ctx, it))) } }
+    var msg by remember { mutableStateOf("") }
+
+    Section("Scadenze", Icons.Default.Notifications) {
+        Text("Promemoria a voce e sull'orologio nei 30 giorni prima, quando sali in auto.")
+        dates.forEach { (what, value) ->
+            OutlinedTextField(value.value, { value.value = it.filter { c -> c.isDigit() || c == '/' } },
+                label = { Text("${what.replaceFirstChar(Char::uppercase)} (gg/mm/aaaa)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+        }
+        Button(onClick = {
+            val parsed = dates.mapValues { AlertRules.parseDate(it.value.value) }
+            val bad = parsed.filterValues { it == null }.keys
+            msg = if (bad.isNotEmpty()) "Data non valida: ${bad.joinToString()}" else {
+                parsed.forEach { (what, day) -> Prefs.setDeadline(ctx, what, day!!) }
+                "Salvato"
+            }
+        }) { Text("Salva") }
+        if (msg.isNotEmpty()) Text(msg)
     }
 }
 
@@ -123,8 +152,34 @@ fun DashcamSection() {
 fun FuelSection() {
     val ctx = LocalContext.current
     var fuel by remember { mutableStateOf(Prefs.fuel(ctx)) }
-    Section("Carburante", Icons.Default.LocationOn) {
-        Text("Per i prezzi dei distributori vicini sul display dell'auto.")
+    var liters by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
+    var tick by remember { mutableStateOf(0) }
+    val refuels = remember(tick) { Refuels.list(ctx) }
+    val real = remember(tick) { Refuels.realL100(refuels) }
+    val range = remember(tick) { Refuels.rangeText(ctx) }
+    val decimal = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+
+    Section("Carburante e rifornimenti", Icons.Default.LocationOn) {
+        Text(range, style = MaterialTheme.typography.titleMedium)
+        Text("Consumo reale: ${real?.let { "${f(it)} l/100 km" } ?: "servono almeno due pieni"}",
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(liters, { liters = it.filter { c -> c.isDigit() || c == ',' || c == '.' } },
+                label = { Text("Litri") }, keyboardOptions = decimal, modifier = Modifier.weight(1f))
+            OutlinedTextField(price, { price = it.filter { c -> c.isDigit() || c == ',' || c == '.' } },
+                label = { Text("€ al litro") }, keyboardOptions = decimal, modifier = Modifier.weight(1f))
+        }
+        Button(enabled = liters.replace(',', '.').toDoubleOrNull()?.let { it in 1.0..Refuels.TANK_L + 5 } == true, onClick = {
+            Refuels.add(ctx, liters.replace(',', '.').toDouble(), price.replace(',', '.').toDoubleOrNull()?.takeIf { it in 0.5..5.0 })
+            liters = ""; price = ""; tick++
+        }) { Text("Segna il pieno") }
+        Text("In auto puoi dirlo a voce: \"ho messo 30 litri a 1,85\". Tieni aggiornati i km dell'auto qui sotto, in Viaggi e manutenzione.",
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        refuels.take(5).forEach { r ->
+            Text("${date(r.time)} · ${f(r.liters)} l${r.price?.let { " · € ${f(it, 3)}/l" } ?: ""}${if (r.odoKm > 0) " · ${r.odoKm.toInt()} km" else ""}")
+        }
+        Text("Carburante per i prezzi sul display:", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Benzina", "Gasolio", "GPL", "Metano").forEach { f ->
                 FilterChip(selected = fuel == f, onClick = { fuel = f; Prefs.setFuel(ctx, f) }, label = { Text(f) })

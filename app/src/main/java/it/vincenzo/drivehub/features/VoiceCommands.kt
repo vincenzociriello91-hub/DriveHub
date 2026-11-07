@@ -19,6 +19,10 @@ sealed interface Cmd {
     data object Previous : Cmd
     data object SaveClip : Cmd
     data object Trip : Cmd
+    data class Refuel(val liters: Double, val price: Double?) : Cmd
+    data object Range : Cmd
+    data object Parked : Cmd
+    data object Maintenance : Cmd
     data class Unknown(val text: String) : Cmd
 }
 
@@ -37,9 +41,13 @@ object VoiceCommands {
         }
         // il testo dettato mantiene maiuscole e minuscole originali
         write.find(text.trim())?.let { return Cmd.Type(it.groupValues[2].trim(), false) }
+        Refuels.parse(t)?.let { (l, p) -> return Cmd.Refuel(l, p) }
         search.find(text.trim())?.let { m -> if (fuelWords.none { it in t }) return Cmd.Type(m.groupValues[1].trim(), true) }
         fun has(vararg words: String) = words.any { it in t }
         return when {
+            has("parchegg", "dove ho lasciato", "dov'è la macchina", "dov'è l'auto") -> Cmd.Parked
+            has("tagliando", "gomme", "scadenz", "bollo", "assicurazion", "revision") -> Cmd.Maintenance
+            has("autonomia", "mi resta", "mi restano", "posso ancora fare") -> Cmd.Range
             has("indietro") -> Cmd.Back
             has("schermata principale", "tutte le app") || t == "home" -> Cmd.Home
             has("dividi", "schermo diviso", "affianca") -> Cmd.Split

@@ -1,3 +1,10 @@
+Versione 3.7.0 (7 novembre 2026)
+• Rifornimenti: segna il pieno nell'app (Viaggi) o a voce in auto, per esempio "ho messo 30 litri a 1,85" o "pieno di 50 euro a 1,80". DriveHub calcola il consumo reale tra un pieno e l'altro e usa il prezzo per il costo dei viaggi.
+• Autonomia: quanti chilometri restano col serbatoio da 42 litri della Fiesta. Chiedi "autonomia" o "quanta benzina mi resta".
+• Scadenze di bollo, assicurazione e revisione: inserisci le date in Viaggi, ricevi il promemoria a voce e sull'orologio nei 30 giorni prima.
+• Nuovi comandi vocali: "dove ho parcheggiato" (ora e distanza), "quanto manca al tagliando" (km e scadenze).
+• Display dell'auto: le ultime app usate sono le prime della griglia.
+
 Versione 3.6.0 (7 novembre 2026)
 • App sul telefono riorganizzata in quattro schede in basso: Auto, Diagnosi, Viaggi, Altro. Niente più una sola pagina lunghissima.
 • "Prima di partire": una lista con la spunta su quello che è pronto (permessi, DriveHub in Android Auto, schermo come tablet, adattatore OBD) e un pulsante per sistemare quello che manca. Sparisce quando è tutto pronto.

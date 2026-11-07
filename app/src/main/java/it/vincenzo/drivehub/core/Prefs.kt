@@ -57,4 +57,14 @@ object Prefs {
     // vero dopo la prima volta che lo schermo DriveHub si è aperto in Android Auto (lista di avvio nell'app)
     fun carSeen(ctx: Context): Boolean = sp(ctx).getBoolean("car_seen", false)
     fun setCarSeen(ctx: Context) = sp(ctx).edit().putBoolean("car_seen", true).apply()
+
+    /** Scadenze per data ("bollo", "assicurazione", "revisione") come giorno epoch; 0 = non impostata */
+    val DEADLINES = listOf("bollo", "assicurazione", "revisione")
+    fun deadline(ctx: Context, what: String): Long = sp(ctx).getLong("scad_$what", 0)
+    fun setDeadline(ctx: Context, what: String, epochDay: Long) = sp(ctx).edit().putLong("scad_$what", epochDay).apply()
+
+    /** Ultime app aperte sul display dell'auto (componenti, la più recente prima) */
+    fun recentApps(ctx: Context): List<String> = sp(ctx).getString("recent_apps", "")!!.split('\n').filter { it.isNotEmpty() }
+    fun addRecentApp(ctx: Context, component: String) =
+        sp(ctx).edit().putString("recent_apps", (listOf(component) + recentApps(ctx).minus(component)).take(4).joinToString("\n")).apply()
 }

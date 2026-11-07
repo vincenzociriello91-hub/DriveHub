@@ -29,6 +29,7 @@ import android.view.Display
 import android.view.KeyEvent
 import android.view.Surface
 import it.vincenzo.drivehub.BuildConfig
+import it.vincenzo.drivehub.DriveHubApp
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.SpeedMonitor
 import it.vincenzo.drivehub.core.Prefs
@@ -447,6 +448,7 @@ object ScreenController {
     private fun launchNow(component: ComponentName) {
         val c = client ?: return
         topPackage = component.packageName
+        Prefs.addRecentApp(DriveHubApp.ctx, component.flattenToString())
         io.execute {
             try {
                 val out = c.launch(component.flattenToShortString())

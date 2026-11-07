@@ -173,7 +173,7 @@ private fun Home() {
             when (tab) {
                 Tab.AUTO -> AutoTab(permTick, askPermissions) { tab = it }
                 Tab.DIAGNOSI -> DiagnosiTab(permTick)
-                Tab.VIAGGI -> { TripsSection(); ParkingSection(); FuelSection() }
+                Tab.VIAGGI -> { FuelSection(); TripsSection(); DeadlinesSection(); ParkingSection() }
                 Tab.ALTRO -> AltroTab(askPermissions)
             }
         }
