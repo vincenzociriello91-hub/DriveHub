@@ -8,13 +8,12 @@ Criteri di scelta: utile a chi guida la Fiesta ogni giorno, sicura (niente che c
 schermo in movimento), realizzabile senza chiavi o servizi a pagamento, coerente con quello che dicono i rapporti.
 
 ## Da fare
-- [ ] Barra in alto nel launcher dell'auto: ora, meteo, velocità e avvisi attivi.
 - [ ] Tema chiaro/scuro del launcher in base all'ora e alla luce.
-- [ ] Grafico dei consumi e dei km per settimana e per mese nell'app sul telefono.
-- [ ] Stile di guida: accelerazioni e frenate brusche (accelerometro e OBD), punteggio "eco" del viaggio.
 - [ ] Carburante lungo il tragitto casa-lavoro abituale (dai viaggi registrati), non solo vicino a te.
+      Prima serve salvare partenza e arrivo dei viaggi (oggi si salvano solo km e litri).
 - [ ] Tastiera semplice sul display dell'auto, solo a veicolo fermo, in aggiunta alla dettatura.
 - [ ] Riquadro (tile) sul Pixel Watch con consumo del viaggio e prossimo distributore.
+      Serve un'app Wear OS separata da installare sull'orologio (debug wireless): chiedere a Vincenzo prima.
 - [ ] Dati dell'auto dai server Ford (posizione, carburante, chilometri anche ad auto spenta) tramite l'app Ford:
       sperimentale, le API non sono ufficiali; solo con accesso dell'utente nell'app, mai credenziali nel codice.
 - [ ] Verifica con gli adattatori Android Auto senza fili (AAWireless, Motorola MA1 e simili) sul SYNC 2.5,
@@ -25,3 +24,4 @@ schermo in movimento), realizzabile senza chiavi o servizi a pagamento, coerente
 - [x] 3.1.0 – codici errore spiegati e cancellazione, dettatura, pressione lunga.
 - [x] 3.6.0 – app sul telefono a schede (Auto, Diagnosi, Viaggi, Altro) con lista "Prima di partire".
 - [x] 3.7.0 – rifornimenti e autonomia, scadenze per data, comandi vocali parcheggio/tagliando/autonomia, ultime app in cima.
+- [x] 3.8.0 – stile di guida con punteggio eco, grafico km e consumi per settimana e mese, barra in alto del display con meteo, autonomia e avvisi.

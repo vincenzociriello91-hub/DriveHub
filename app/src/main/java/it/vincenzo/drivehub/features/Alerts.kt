@@ -50,6 +50,17 @@ object AlertRules {
 
     fun formatDate(day: Long): String = if (day <= 0) "" else LocalDate.ofEpochDay(day).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
+    /** Etichetta breve dell'avviso per la barra del display */
+    fun label(key: String): String = when {
+        key == "caldo" -> "Motore caldo"
+        key == "batteria" -> "Batteria"
+        key == "riserva" -> "Riserva"
+        key.startsWith("dtc") -> "Codici errore"
+        key.startsWith("manut") -> "Manutenzione"
+        key.startsWith("scad") -> "Scadenza"
+        else -> "Avviso"
+    }
+
     /** Codici nuovi rispetto a quelli già noti (alla prima lettura sono tutti nuovi) */
     fun newCodes(known: Set<String>?, now: List<String>): List<String> =
         if (known == null) now else now.filter { it !in known }
@@ -59,6 +70,9 @@ object AlertRules {
 object AlertMonitor {
     private val last = HashMap<String, Long>()
     private var knownDtcs: Set<String>? = null
+    /** Ultimo avviso dato (chiave, ora): la barra del display lo mostra per 10 minuti */
+    @Volatile var lastAlert: Pair<String, Long>? = null
+        private set
 
     @Synchronized fun reset() {
         last.clear()
@@ -112,6 +126,7 @@ object AlertMonitor {
         val now = System.currentTimeMillis()
         if (now - (last[key] ?: 0L) < 10 * 60_000L) return
         last[key] = now
+        lastAlert = key to now
         Reports.log("Avviso: $msg")
         Speech.say(msg)
         Notify.show(DriveHubApp.ctx, key.hashCode(), Notify.ALERTS, "DriveHub · avviso auto", msg)

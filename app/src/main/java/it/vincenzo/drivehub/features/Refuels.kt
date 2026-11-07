@@ -74,11 +74,15 @@ object Refuels {
         if (km >= 50) t.sumOf { it.liters } * 100 / km else null
     }
 
-    fun rangeText(ctx: Context): String {
-        val l100 = bestL100(ctx)
+    fun currentRangeKm(ctx: Context, l100: Double? = bestL100(ctx)): Double? {
         val last = list(ctx).firstOrNull()
         val since = last?.let { (Prefs.odometerKm(ctx) - it.odoKm).takeIf { k -> it.odoKm > 0 && k >= 0 } }
-        val range = rangeKm(ObdManager.state.value.values["2F"], l100, since)
+        return rangeKm(ObdManager.state.value.values["2F"], l100, since)
+    }
+
+    fun rangeText(ctx: Context): String {
+        val l100 = bestL100(ctx)
+        val range = currentRangeKm(ctx, l100)
         return when {
             range != null -> "Autonomia circa ${range.toInt()} chilometri, con un consumo di ${f(l100!!)} litri ogni cento."
             l100 == null -> "Non conosco ancora il consumo: segna i rifornimenti dicendo per esempio \"ho messo 30 litri a 1,85\"."

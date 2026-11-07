@@ -37,6 +37,7 @@ object SpeedMonitor {
         kmh = v
         lastUpdate = SystemClock.elapsedRealtime()
         gate.update(v)
+        TripRecorder.onSpeed(v)
     }
 
     fun known() = lastUpdate > 0 && SystemClock.elapsedRealtime() - lastUpdate < 10_000

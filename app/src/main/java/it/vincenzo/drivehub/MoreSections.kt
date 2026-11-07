@@ -30,6 +30,14 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.Modifier
 import it.vincenzo.drivehub.features.AlertRules
 import it.vincenzo.drivehub.features.Refuels
+import it.vincenzo.drivehub.features.TripStats
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import it.vincenzo.drivehub.features.DashcamService
@@ -65,8 +73,45 @@ fun TripsSection() {
         if (saved.isNotEmpty()) Text(saved)
         if (trips.isEmpty()) Text("Nessun viaggio registrato.")
         trips.forEach { t ->
-            Text("${date(t.start)} · ${f(t.km)} km · ${t.minutes} min · ${f(t.l100)} l/100 · € ${f(t.cost, 2)}")
+            Text("${date(t.start)} · ${f(t.km)} km · ${t.minutes} min · ${f(t.l100)} l/100 · € ${f(t.cost, 2)}${t.eco?.let { " · eco $it" } ?: ""}")
         }
+    }
+}
+
+/** Km per settimana o per mese in barre, con il consumo medio del periodo */
+@Composable
+fun StatsSection() {
+    val ctx = LocalContext.current
+    var monthly by remember { mutableStateOf(false) }
+    val trips = remember { Trips.list(ctx) }
+    val today = remember { java.time.LocalDate.now() }
+    val stats = remember(monthly) { if (monthly) TripStats.monthly(trips, today) else TripStats.weekly(trips, today) }
+    val max = stats.maxOf { it.km }.coerceAtLeast(1.0)
+    val label = java.time.format.DateTimeFormatter.ofPattern(if (monthly) "MMM" else "d/M", Locale.ITALY)
+
+    Section("Km e consumi", Icons.Default.DateRange) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(selected = !monthly, onClick = { monthly = false }, label = { Text("Settimane") })
+            FilterChip(selected = monthly, onClick = { monthly = true }, label = { Text("Mesi") })
+        }
+        if (trips.isEmpty()) Text("Le barre compaiono dopo i primi viaggi in auto.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(Modifier.fillMaxWidth().height(170.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+            stats.forEach { p ->
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(p.km.toInt().toString(), style = MaterialTheme.typography.labelSmall)
+                    Box(
+                        Modifier.fillMaxWidth().height((110 * p.km / max).dp.coerceAtLeast(2.dp))
+                            .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                    Text(p.start.format(label), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                }
+            }
+        }
+        val km = stats.sumOf { it.km }
+        val liters = stats.sumOf { it.liters }
+        Text("Totale ${f(km, 0)} km${if (km > 1 && liters > 0) " · media ${f(liters * 100 / km)} l/100 km" else ""}",
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

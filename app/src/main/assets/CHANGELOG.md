@@ -1,3 +1,8 @@
+Versione 3.8.0 (7 novembre 2026)
+• Stile di guida: DriveHub conta frenate e accelerazioni brusche e dà a ogni viaggio un punteggio "eco" da 0 a 100. Lo vedi nell'elenco dei viaggi e lo senti chiedendo "viaggio".
+• Grafico dei km e dei consumi per settimana e per mese nella scheda Viaggi.
+• Barra in alto sul display dell'auto: ora, data, meteo, km di autonomia e l'ultimo avviso (motore caldo, batteria, codici errore, scadenze) per 10 minuti.
+
 Versione 3.7.0 (7 novembre 2026)
 • Rifornimenti: segna il pieno nell'app (Viaggi) o a voce in auto, per esempio "ho messo 30 litri a 1,85" o "pieno di 50 euro a 1,80". DriveHub calcola il consumo reale tra un pieno e l'altro e usa il prezzo per il costo dei viaggi.
 • Autonomia: quanti chilometri restano col serbatoio da 42 litri della Fiesta. Chiedi "autonomia" o "quanta benzina mi resta".

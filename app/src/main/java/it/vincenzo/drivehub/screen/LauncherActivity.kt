@@ -52,7 +52,12 @@ import androidx.core.graphics.drawable.toBitmap
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.SpeedMonitor
+import it.vincenzo.drivehub.core.Locator
+import it.vincenzo.drivehub.features.AlertMonitor
+import it.vincenzo.drivehub.features.AlertRules
 import it.vincenzo.drivehub.features.DashcamService
+import it.vincenzo.drivehub.features.Refuels
+import it.vincenzo.drivehub.weather.Weather
 import it.vincenzo.drivehub.ui.CarColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -94,12 +99,27 @@ private fun LauncherScreen(resumes: Int) {
     }
 }
 
-/** Ora, data, velocità e modalità passeggero, aggiornate ogni secondo */
+/** Ora, data, meteo, avviso attivo, autonomia, velocità e modalità passeggero */
 @Composable
 private fun TopBar() {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(1000); now = System.currentTimeMillis() } }
     val speed = if (SpeedMonitor.known()) SpeedMonitor.kmh else null
+    val ctx = LocalContext.current
+    var weather by remember { mutableStateOf<String?>(null) }
+    var range by remember { mutableStateOf<Double?>(null) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            weather = withContext(Dispatchers.IO) {
+                runCatching {
+                    Locator.current(ctx)?.let { val f = Weather.load(it.latitude, it.longitude); "${f.temp.toInt()}° ${Weather.describe(f.code)}" }
+                }.getOrNull()
+            } ?: weather
+            delay(20 * 60_000L)
+        }
+    }
+    LaunchedEffect(Unit) { while (true) { range = withContext(Dispatchers.IO) { Refuels.currentRangeKm(ctx) }; delay(60_000) } }
+    val alert = AlertMonitor.lastAlert?.takeIf { now - it.second < 10 * 60_000L }?.first
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -107,9 +127,13 @@ private fun TopBar() {
         Text(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date(now)), color = CarColors.text,
             fontSize = 34.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(16.dp))
-        Text(SimpleDateFormat("EEEE d MMMM", Locale.ITALY).format(Date(now)).replaceFirstChar { it.uppercase() },
-            color = CarColors.muted, fontSize = 16.sp)
-        Spacer(Modifier.weight(1f))
+        // su schermi stretti (SYNC 2.5, 800x480) data e meteo si accorciano per lasciare posto alle pastiglie
+        Text(SimpleDateFormat("EEEE d MMMM", Locale.ITALY).format(Date(now)).replaceFirstChar { it.uppercase() } +
+            (weather?.let { " · $it" } ?: ""),
+            color = CarColors.muted, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(10.dp))
+        alert?.let { Pill(AlertRules.label(it), CarColors.warn); Spacer(Modifier.width(10.dp)) }
+        range?.let { Pill("${it.toInt()} km", CarColors.ok); Spacer(Modifier.width(10.dp)) }
         if (ScreenController.passengerMode) Pill("Passeggero", CarColors.warn)
         if (speed != null) {
             Spacer(Modifier.width(10.dp))
