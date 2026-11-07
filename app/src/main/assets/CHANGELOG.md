@@ -1,3 +1,7 @@
+Versione 3.8.1 (7 novembre 2026)
+• Lo schermo DriveHub ora compare nel menu di Android Auto: Android Auto mostra una sola voce per app e prima sceglieva il lettore "DriveHub Musica". Il lettore è spento di partenza; se lo vuoi lo riaccendi in Altro › Permessi e Android Auto (ma allora lo schermo DriveHub sparisce dal menu).
+• Dopo l'aggiornamento: Impostazioni › App › Android Auto › Forza interruzione, poi in Personalizza menu Avvio app metti la spunta a DriveHub.
+
 Versione 3.8.0 (7 novembre 2026)
 • Stile di guida: DriveHub conta frenate e accelerazioni brusche e dà a ogni viaggio un punteggio "eco" da 0 a 100. Lo vedi nell'elenco dei viaggi e lo senti chiedendo "viaggio".
 • Grafico dei km e dei consumi per settimana e per mese nella scheda Viaggi.

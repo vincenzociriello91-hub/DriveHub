@@ -103,7 +103,8 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Reports.log("Telefono: app aperta")
+        val music = packageManager.getComponentEnabledSetting(android.content.ComponentName(this, it.vincenzo.drivehub.media.MusicService::class.java))
+        Reports.log("Telefono: app aperta (DriveHub Musica in Android Auto: ${if (music == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) "accesa" else "spenta"})")
         setContent { DriveHubTheme { Home() } }
     }
 
@@ -199,7 +200,7 @@ private fun AutoTab(permTick: Int, askPermissions: () -> Unit, goTo: (Tab) -> Un
         Section("Prima di partire", Icons.Default.CheckCircle) {
             Step(perms, "Permessi", "Posizione, Bluetooth, notifiche, fotocamera, microfono.", "Concedi", askPermissions)
             Step(carSeen, "DriveHub in Android Auto", "Lo schermo DriveHub non si è ancora aperto in auto.", "Come fare") { showAaHelp = !showAaHelp }
-            if (showAaHelp && !carSeen) AndroidAutoHelp()
+            if (showAaHelp && !carSeen) { AndroidAutoHelp(); MusicInAndroidAuto() }
             Step(screenReady, "Schermo come tablet", "Avvia Shizuku, oppure attiva lo specchio qui sotto.", "Apri Shizuku") { openShizuku(ctx) }
             Step(obdChosen, "Adattatore OBD", "Scegli come è collegato l'adattatore.", "Scegli") { goTo(Tab.DIAGNOSI) }
         }
@@ -259,10 +260,36 @@ private fun AndroidAutoHelp() {
     Text(
         "1. Impostazioni › App connesse › Android Auto: tocca 10 volte \"Versione\".\n" +
             "2. Menu ⋮ › Impostazioni sviluppatore › attiva \"Origini sconosciute\".\n" +
-            "3. Personalizza menu Avvio app: abilita DriveHub e DriveHub Musica.\n" +
-            "4. In auto apri DriveHub (non DriveHub Musica): la spunta qui compare da sola.",
+            "3. Impostazioni › App › Android Auto › Forza interruzione, così rilegge le app.\n" +
+            "4. Personalizza menu Avvio app: metti la spunta a DriveHub.\n" +
+            "5. In auto apri DriveHub: la spunta qui compare da sola.",
         style = MaterialTheme.typography.bodyMedium,
     )
+}
+
+/** Il lettore musicale nel menu di Android Auto: acceso, nasconde lo schermo DriveHub (una sola voce per app) */
+@Composable
+private fun MusicInAndroidAuto() {
+    val ctx = LocalContext.current
+    val component = remember { android.content.ComponentName(ctx, it.vincenzo.drivehub.media.MusicService::class.java) }
+    var on by remember {
+        mutableStateOf(ctx.packageManager.getComponentEnabledSetting(component) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).padding(end = 12.dp)) {
+            Text("DriveHub Musica in Android Auto", style = MaterialTheme.typography.titleMedium)
+            Text("Lasciala spenta: Android Auto mostra una sola voce per app e con la musica accesa nasconde lo schermo DriveHub. " +
+                "Dopo ogni cambio fai Forza interruzione di Android Auto.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(on, {
+            on = it
+            ctx.packageManager.setComponentEnabledSetting(component,
+                if (it) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP)
+            Reports.log("DriveHub Musica in Android Auto: ${if (it) "accesa" else "spenta"}")
+        })
+    }
 }
 
 private const val SHIZUKU_PKG = "moe.shizuku.privileged.api"
@@ -499,6 +526,7 @@ private fun AltroTab(askPermissions: () -> Unit) {
     Section("Permessi e Android Auto", Icons.Default.Lock) {
         OutlinedButton(onClick = askPermissions) { Text("Concedi i permessi") }
         AndroidAutoHelp()
+        MusicInAndroidAuto()
     }
 
     Section("Rapporti", Icons.Default.Info) {

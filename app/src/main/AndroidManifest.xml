@@ -69,9 +69,12 @@
             </intent-filter>
         </service>
 
+        <!-- Spento di partenza: Android Auto mostra una sola voce per app e con il lettore attivo
+             nasconde lo schermo DriveHub. Si accende dall'app (scheda Altro). -->
         <service
             android:name=".media.MusicService"
             android:label="DriveHub Musica"
+            android:enabled="false"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
