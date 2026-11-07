@@ -36,6 +36,10 @@ import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.SpeedMonitor
 import it.vincenzo.drivehub.screen.ScreenController
+import it.vincenzo.drivehub.features.CarFeatures
+import it.vincenzo.drivehub.features.DashcamService
+import it.vincenzo.drivehub.features.VoiceAssistant
+import androidx.car.app.CarToast
 import it.vincenzo.drivehub.fuel.FuelRepo
 import it.vincenzo.drivehub.fuel.Offer
 import it.vincenzo.drivehub.obd.ObdManager
@@ -61,8 +65,10 @@ class DriveHubSession : Session() {
                 SpeedMonitor.start(carContext)
                 ScreenController.startSession(carContext)
                 carContext.getCarService(AppManager::class.java).setSurfaceCallback(CarSurface)
+                CarFeatures.onStart(carContext)
             }
             override fun onDestroy(owner: LifecycleOwner) {
+                CarFeatures.onStop(carContext)
                 ScreenController.stopSession()
                 SpeedMonitor.stop()
                 ObdManager.stop()
@@ -98,10 +104,21 @@ class DisplayScreen(ctx: CarContext) : Screen(ctx) {
             .addAction(act(R.drawable.ic_apps) { ScreenController.home() })
             .addAction(act(R.drawable.ic_back) { ScreenController.back() })
             .addAction(act(R.drawable.ic_gauge) { screenManager.push(HomeScreen(carContext)) })
+            .addAction(act(R.drawable.ic_mic) {
+                VoiceAssistant.listen(carContext) { CarToast.makeText(carContext, it, CarToast.LENGTH_SHORT).show() }
+            })
+            .build()
+        val map = ActionStrip.Builder()
+            .addAction(Action.PAN)
+            .addAction(act(R.drawable.ic_split) { ScreenController.toggleSplit() })
+            .addAction(act(R.drawable.ic_record) {
+                val ok = DashcamService.protectNow()
+                CarToast.makeText(carContext, if (ok) "Clip dashcam salvata" else "Dashcam spenta", CarToast.LENGTH_SHORT).show()
+            })
             .build()
         return NavigationTemplate.Builder()
             .setActionStrip(strip)
-            .setMapActionStrip(ActionStrip.Builder().addAction(Action.PAN).build())
+            .setMapActionStrip(map)
             .build()
     }
 }

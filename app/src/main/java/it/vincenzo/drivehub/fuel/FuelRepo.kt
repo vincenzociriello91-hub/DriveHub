@@ -2,6 +2,7 @@ package it.vincenzo.drivehub.fuel
 
 import android.content.Context
 import it.vincenzo.drivehub.core.Http
+import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import java.io.File
 
@@ -32,6 +33,7 @@ object FuelRepo {
         val offers = fresh(ctx, "prezzo_alle_8.csv").bufferedReader().useLines {
             FuelParser.cheapest(it, stations, fuel, lat, lon)
         }
+        offers.firstOrNull()?.let { Prefs.setLastFuel(ctx, "${it.station.brand} ${it.station.town}".trim(), it.price) }
         Reports.log("Ricerca $fuel: ${stations.size} impianti entro $radiusKm km, ${offers.size} con prezzo; migliore ${offers.firstOrNull()?.price}")
         return offers
     }

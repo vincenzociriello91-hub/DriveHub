@@ -1,3 +1,12 @@
+Versione 3.0.0 (7 novembre 2026)
+• Schermo diviso: app a sinistra e cruscotto DriveHub a destra (ora, velocità, giri, consumi, motore, viaggio, prezzo carburante), sempre visibile anche in movimento.
+• Assistente vocale: pulsante microfono sul display. "Apri YouTube", "quanto consumo", "benzina", "errori", "motore", "meteo", "viaggio", "pausa", "prossima", "salva clip".
+• Avvisi a voce e sul Pixel Watch: motore troppo caldo, batteria non in carica, riserva, codici errore nuovi (controllo automatico ogni 5 minuti).
+• Diario dei viaggi: km, minuti, consumo medio e costo stimato; promemoria tagliando e cambio gomme in base ai km.
+• Parcheggio: posizione salvata quando scolleghi l'auto, timer della sosta con avviso 10 minuti prima.
+• Dashcam con la fotocamera del Pixel: ultimi 5 minuti a ciclo, clip salvata con frenata brusca, urto o pulsante.
+• Avvio automatico in auto: musica e dashcam (si attivano nell'app sul telefono).
+
 Versione 2.0.0 (7 novembre 2026)
 • Il display dell'auto diventa un secondo tablet: launcher con tutte le app del telefono, che si aprono sul display dell'auto in modo indipendente (serve Shizuku).
 • Tocchi e trascinamenti sul display dell'auto passano all'app aperta; pulsanti App, Indietro e Strumenti sempre a lato.

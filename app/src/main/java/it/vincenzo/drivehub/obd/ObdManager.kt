@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import it.vincenzo.drivehub.core.Prefs
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.SpeedMonitor
+import it.vincenzo.drivehub.features.AlertMonitor
+import it.vincenzo.drivehub.features.TripRecorder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.Closeable
@@ -43,6 +45,8 @@ object ObdManager {
 
     @Volatile private var running = false
     @Volatile private var dtcRequested = false
+    /** Lettura automatica dei codici errore ogni 5 minuti (0 = subito alla connessione) */
+    private var lastAutoDtc = 0L
     private var thread: Thread? = null
     private val unsupported = mutableSetOf<String>()
 
@@ -55,6 +59,7 @@ object ObdManager {
             return
         }
         running = true
+        lastAutoDtc = 0L
         val app = ctx.applicationContext
         thread = Thread({ loop(app, device) }, "obd").apply { isDaemon = true; start() }
     }
@@ -114,13 +119,21 @@ object ObdManager {
         val maf = values["10"]; val kmh = values["0D"]
         if (maf != null && kmh != null) {
             values["LH"] = ObdParser.litersPerHour(maf)
+            TripRecorder.onFuelRate(values.getValue("LH"))
             ObdParser.litersPer100(maf, kmh)?.let { values["L100"] = it } ?: values.remove("L100")
         }
+        AlertMonitor.check(values)
         var dtcs = _state.value.dtcs
+        val now = System.currentTimeMillis()
+        if (now - lastAutoDtc > 300_000) {
+            lastAutoDtc = now
+            dtcRequested = true
+        }
         if (dtcRequested) {
             dtcRequested = false
             dtcs = ObdParser.dtcs(send(link, "03", 5000))
             Reports.log("Codici errore letti: ${dtcs.ifEmpty { listOf("nessuno") }}")
+            AlertMonitor.onDtcs(dtcs)
         }
         values.forEach { (k, v) -> Reports.extras["obd_$k"] = "%.1f".format(v) }
         _state.value = _state.value.copy(values = values, dtcs = dtcs)

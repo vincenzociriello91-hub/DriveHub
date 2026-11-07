@@ -28,6 +28,7 @@ object DisplayProtocol {
     const val SWIPE = 4
     const val KEY = 5
     const val LAUNCH = 6
+    const val RESIZE = 7
     /** Chiamata "destroy" che Shizuku invia ai propri servizi utente */
     const val DESTROY = 16777115
 }
@@ -61,6 +62,13 @@ class DisplayService(base: Context) : Binder() {
                     reply?.writeNoException()
                 }
                 DisplayProtocol.KEY -> { key(data.readInt()); reply?.writeNoException() }
+                DisplayProtocol.RESIZE -> {
+                    val surface = Surface.CREATOR.createFromParcel(data)
+                    val d = vd ?: error("display non creato")
+                    d.resize(data.readInt(), data.readInt(), data.readInt())
+                    d.setSurface(surface)
+                    reply?.writeNoException()
+                }
                 DisplayProtocol.LAUNCH -> { val out = launch(data.readString().orEmpty()); reply?.writeNoException(); reply?.writeString(out) }
                 else -> return super.onTransact(code, data, reply, flags)
             }
@@ -200,6 +208,8 @@ class DisplayClient(private val binder: IBinder) {
     fun create(s: Surface, w: Int, h: Int, dpi: Int): Int =
         call(DisplayProtocol.CREATE, { s.writeToParcel(it, 0); it.writeInt(w); it.writeInt(h); it.writeInt(dpi) }) { it.readInt() }
     fun release() = call(DisplayProtocol.RELEASE, {}) {}
+    fun resize(s: Surface, w: Int, h: Int, dpi: Int) =
+        call(DisplayProtocol.RESIZE, { s.writeToParcel(it, 0); it.writeInt(w); it.writeInt(h); it.writeInt(dpi) }) {}
     fun tap(x: Float, y: Float) = call(DisplayProtocol.TAP, { it.writeFloat(x); it.writeFloat(y) }) {}
     fun swipe(x1: Float, y1: Float, x2: Float, y2: Float, ms: Long) =
         call(DisplayProtocol.SWIPE, { it.writeFloat(x1); it.writeFloat(y1); it.writeFloat(x2); it.writeFloat(y2); it.writeLong(ms) }) {}

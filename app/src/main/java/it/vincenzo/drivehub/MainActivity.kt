@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
+internal fun Section(title: String, content: @Composable () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
@@ -120,12 +120,12 @@ private fun Home() {
         Text("DriveHub ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.headlineMedium)
 
         Section("1. Permessi") {
-            Text("Posizione (carburante e meteo), Bluetooth (OBD), audio (musica), notifiche.")
+            Text("Posizione (carburante, meteo, viaggi, parcheggio), Bluetooth (OBD), audio (musica), notifiche (avvisi anche sul Pixel Watch), fotocamera (dashcam), microfono (comandi vocali).")
             Button(onClick = {
                 permissions.launch(arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.READ_MEDIA_AUDIO,
-                    Manifest.permission.POST_NOTIFICATIONS,
+                    Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO,
                 ))
             }) { Text("Concedi i permessi") }
         }
@@ -173,6 +173,10 @@ private fun Home() {
                 }
             }
         }
+
+        TripsSection()
+        ParkingSection()
+        DashcamSection()
 
         Section("Aggiornamenti") {
             Button(onClick = {

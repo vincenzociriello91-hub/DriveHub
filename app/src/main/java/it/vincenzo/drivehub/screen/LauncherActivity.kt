@@ -3,6 +3,9 @@ package it.vincenzo.drivehub.screen
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ResolveInfo
+import it.vincenzo.drivehub.core.Prefs
+import it.vincenzo.drivehub.features.DashcamService
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -50,6 +53,12 @@ class LauncherActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // la fotocamera in background si può avviare solo con un'app visibile: il launcher sull'auto lo è
+        if (Prefs.autoDashcam(this)) DashcamService.start(this)
+    }
 }
 
 private class AppEntry(val label: String, val component: ComponentName, val icon: ImageBitmap)
@@ -77,10 +86,14 @@ private fun AppGrid() {
     }
 }
 
+/** App installate con un'icona nel launcher (esclusa DriveHub) */
+internal fun launchableActivities(ctx: Context): List<ResolveInfo> =
+    ctx.packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
+        .filter { it.activityInfo.packageName != ctx.packageName }
+
 private fun loadApps(ctx: Context): List<AppEntry> {
     val pm = ctx.packageManager
-    return pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
-        .filter { it.activityInfo.packageName != ctx.packageName }
+    return launchableActivities(ctx)
         .map {
             AppEntry(
                 it.loadLabel(pm).toString(),

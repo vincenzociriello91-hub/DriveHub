@@ -29,6 +29,13 @@ import android.view.Surface
 import it.vincenzo.drivehub.BuildConfig
 import it.vincenzo.drivehub.core.Reports
 import it.vincenzo.drivehub.core.SpeedMonitor
+import it.vincenzo.drivehub.core.Prefs
+import it.vincenzo.drivehub.features.Speech
+import it.vincenzo.drivehub.features.TripRecorder
+import it.vincenzo.drivehub.obd.ObdManager
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import rikka.shizuku.Shizuku
 import java.util.concurrent.Executors
@@ -41,6 +48,8 @@ import java.util.concurrent.Executors
  */
 object ScreenController {
     enum class Mode { NONE, SHIZUKU, MIRROR }
+
+    private const val SPLIT = 0.62f
 
     /** App che restano utilizzabili in movimento (oltre a quelle di categoria Mappe e Audio) */
     private val ALLOWED_MOVING = setOf(
@@ -71,6 +80,9 @@ object ScreenController {
     private var dispW = 1
     private var dispH = 1
     private var dpi = 160
+    /** larghezza del display intero; con lo schermo diviso il display virtuale ne usa il 62% */
+    private var fullW = 1
+    private var split = false
     private var current: Image? = null
     private var previous: Image? = null
     private var bitmap: Bitmap? = null
@@ -117,6 +129,7 @@ object ScreenController {
             }
             reader?.close(); reader = null
             mode = Mode.NONE
+            split = false
             topPackage = null
             lastBlocked = null
             status.value = "Schermo dell'auto non collegato"
@@ -129,7 +142,10 @@ object ScreenController {
     fun attach(s: Surface, w: Int, hgt: Int, d: Int) {
         synchronized(drawLock) { surface = s; surfW = w.coerceAtLeast(1); surfH = hgt.coerceAtLeast(1) }
         h.post {
-            if (reader == null) createReader(w, hgt, d)
+            if (reader == null) {
+                fullW = w.coerceAtLeast(1)
+                createReader(w, hgt, d)
+            }
             Reports.log("Schermo auto: superficie ${w}x$hgt, $d dpi")
             connect()
             render()
@@ -142,7 +158,9 @@ object ScreenController {
     fun tap(x: Float, y: Float) {
         h.post {
             if (mode == Mode.NONE || blocked()) return@post
-            val dx = x * dispW / surfW
+            val pw = paneW()
+            if (x >= pw) return@post // tocco sul pannello cruscotto
+            val dx = x * dispW / pw
             val dy = y * dispH / surfH
             when (mode) {
                 Mode.SHIZUKU -> client?.let { c -> io.execute { runCatching { c.tap(dx, dy) } } }
@@ -157,7 +175,7 @@ object ScreenController {
         h.post {
             if (mode == Mode.NONE || blocked()) return@post
             val g = gesture ?: floatArrayOf(dispW / 2f, dispH / 2f, dispW / 2f, dispH / 2f).also { gesture = it }
-            g[2] -= distX * dispW / surfW
+            g[2] -= distX * dispW / paneW()
             g[3] -= distY * dispH / surfH
             h.removeCallbacks(endGesture)
             h.postDelayed(endGesture, 150)
@@ -210,6 +228,42 @@ object ScreenController {
             Reports.log("Specchio: autorizzato")
             status.value = "Specchio pronto: si attiva quando apri DriveHub in Android Auto"
             connect()
+        }
+    }
+
+    fun isShizuku() = mode == Mode.SHIZUKU
+
+    /** Schermo diviso: app a sinistra (display virtuale ristretto), cruscotto DriveHub a destra */
+    fun toggleSplit() {
+        h.post {
+            val c = client
+            if (mode != Mode.SHIZUKU || c == null) {
+                Speech.say("Lo schermo diviso funziona con Shizuku attivo")
+                return@post
+            }
+            val on = !split
+            val w = if (on) (fullW * SPLIT).toInt() else fullW
+            val old = reader
+            val oldW = dispW
+            createReader(w, dispH, dpi)
+            try {
+                c.resize(reader!!.surface, w, dispH, dpi)
+            } catch (e: Exception) {
+                reader?.close()
+                reader = old
+                dispW = oldW
+                Reports.log("Schermo diviso non riuscito: ${e.message}")
+                return@post
+            }
+            split = on
+            synchronized(drawLock) {
+                bitmap = null
+                previous?.close(); previous = null
+                current?.close(); current = null
+            }
+            old?.close()
+            Reports.log("Schermo diviso ${if (on) "attivo" else "spento"} (app ${w}x$dispH)")
+            render()
         }
     }
 
@@ -366,7 +420,7 @@ object ScreenController {
                 lastBlocked = b
                 Reports.log(if (b) "Schermo: bloccato (${blockReason()})" else "Schermo: sbloccato")
                 render()
-            }
+            } else if (split) render() // aggiorna il cruscotto ogni secondo
             h.postDelayed(this, 1000)
         }
     }
@@ -405,12 +459,11 @@ object ScreenController {
                     else "In attesa della velocità\n\nServono GPS o adattatore OBD\nper sbloccare lo schermo."
                     else -> null
                 }
-                if (msg == null && bmp != null) {
-                    c.drawBitmap(bmp, null, Rect(0, 0, surfW, surfH), filter)
-                } else {
-                    c.drawColor(Color.BLACK)
-                    if (msg != null) drawMessage(c, msg)
-                }
+                val pane = Rect(0, 0, paneW(), surfH)
+                c.drawColor(Color.BLACK)
+                if (msg == null && bmp != null) c.drawBitmap(bmp, null, pane, filter)
+                else if (msg != null) drawMessage(c, msg, pane)
+                if (split) drawPanel(c, Rect(pane.right, 0, surfW, surfH))
             } finally {
                 s.unlockCanvasAndPost(c)
             }
@@ -419,14 +472,49 @@ object ScreenController {
 
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textAlign = Paint.Align.CENTER }
 
-    private fun drawMessage(c: android.graphics.Canvas, msg: String) {
-        textPaint.textSize = surfH / 14f
+    private fun paneW() = if (split) (surfW * SPLIT).toInt().coerceAtLeast(1) else surfW
+
+    private fun drawMessage(c: android.graphics.Canvas, msg: String, r: Rect) {
+        textPaint.textSize = r.height() / 14f
         val lines = msg.lines()
         val step = textPaint.textSize * 1.4f
-        var y = surfH / 2f - step * (lines.size - 1) / 2
+        var y = r.exactCenterY() - step * (lines.size - 1) / 2
         for (line in lines) {
-            c.drawText(line, surfW / 2f, y, textPaint)
+            c.drawText(line, r.exactCenterX(), y, textPaint)
             y += step
+        }
+    }
+
+    private val panelBg = Paint().apply { color = Color.rgb(18, 22, 30) }
+    private val panelBig = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; isFakeBoldText = true }
+    private val panelText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(190, 200, 215) }
+
+    private fun f(v: Double?, d: Int = 0) = v?.let { String.format(Locale.ITALY, "%.${d}f", it) } ?: "—"
+
+    /** Cruscotto a destra con lo schermo diviso: sempre visibile, anche in movimento */
+    private fun drawPanel(c: android.graphics.Canvas, r: Rect) {
+        c.drawRect(r, panelBg)
+        val v = ObdManager.state.value.values
+        val x = r.left + r.width() * 0.08f
+        val unit = r.height() / 100f
+        panelBig.textSize = unit * 14
+        panelText.textSize = unit * 7
+        var y = r.top + unit * 16
+        c.drawText(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date()), x, y, panelBig)
+        y += unit * 17
+        c.drawText("${f(SpeedMonitor.kmh)} km/h", x, y, panelBig)
+        val lines = listOf(
+            "${f(v["0C"])} giri/min",
+            "Consumo ${f(v["L100"], 1)} l/100",
+            "Media ${f(TripRecorder.avgL100(), 1)} l/100",
+            "Motore ${f(v["05"])}°C · ${f(v["V"], 1)} V",
+            "Viaggio ${f(TripRecorder.km(), 1)} km",
+        ) + (app?.let { ctx -> Prefs.lastFuelPrice(ctx)?.let { "€ ${String.format(Locale.ITALY, "%.3f", it)} ${Prefs.lastFuelName(ctx)}" } }
+            ?.let { listOf(it) } ?: emptyList())
+        y += unit * 4
+        for (line in lines) {
+            y += unit * 10
+            c.drawText(line, x, y, panelText)
         }
     }
 }

@@ -6,6 +6,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Looper
 import android.os.SystemClock
+import it.vincenzo.drivehub.features.TripRecorder
 
 /** Soglia con isteresi: "in movimento" sopra 5 km/h, di nuovo "fermo" solo sotto 3 km/h */
 class SpeedGate {
@@ -27,7 +28,10 @@ object SpeedMonitor {
     @Volatile var kmh: Double? = null
         private set
     private var lm: LocationManager? = null
-    private val listener = LocationListener { loc -> if (loc.hasSpeed()) update(loc.speed * 3.6) }
+    private val listener = LocationListener { loc ->
+        TripRecorder.onLocation(loc)
+        if (loc.hasSpeed()) update(loc.speed * 3.6)
+    }
 
     fun update(v: Double) = synchronized(gate) {
         kmh = v
