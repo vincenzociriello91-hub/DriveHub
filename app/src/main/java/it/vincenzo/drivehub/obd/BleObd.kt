@@ -98,7 +98,7 @@ object BleObd {
 
         val input = object : InputStream() {
             override fun available() = incoming.size
-            override fun read(): Int = (incoming.poll(2, TimeUnit.SECONDS) ?: return -1).toInt() and 0xFF
+            override fun read(): Int = incoming.poll(2, TimeUnit.SECONDS)?.let { it.toInt() and 0xFF } ?: -1
         }
         val output = object : OutputStream() {
             override fun write(b: Int) = write(byteArrayOf(b.toByte()), 0, 1)
