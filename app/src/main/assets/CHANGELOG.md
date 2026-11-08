@@ -1,3 +1,9 @@
+Versione 3.9.0 (8 novembre 2026)
+• Display dell'auto chiaro di giorno e scuro di notte: con il sole lo schermo chiaro si legge meglio, dall'imbrunire torna scuro per non abbagliare. DriveHub calcola alba e tramonto dalla posizione, senza internet. Non devi fare niente in auto: cambia da solo. Se preferisci sempre lo stesso colore, scegli "Scuro" o "Chiaro" in Auto › Colori del display dell'auto.
+• Modalità passeggero dal telefono: prima di accenderla DriveHub chiede conferma, come già fa sul display dell'auto. Spegnerla resta immediato.
+• Accessibilità: gli interruttori di dashcam e musica si accendono toccando tutta la riga, e TalkBack legge il loro nome.
+• Aggiornata una libreria di Android (androidx.core).
+
 Versione 3.8.4 (7 novembre 2026)
 • OBD: se l'adattatore non risponde, DriveHub non riprova più ogni 5 secondi all'infinito. Dal telefono si ferma dopo 3 tentativi e lo dice; in auto riprova a intervalli sempre più lunghi (fino a un minuto), per non consumare batteria.
 • Rapporti più leggibili: i messaggi uguali di fila diventano una riga sola con il numero di ripetizioni; motivo di chiusura spiegato anche per gli aggiornamenti dell'app; stato di Shizuku più preciso (non installato, non avviato, senza permesso).
