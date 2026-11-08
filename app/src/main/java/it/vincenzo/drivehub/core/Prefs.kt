@@ -63,6 +63,11 @@ object Prefs {
     fun deadline(ctx: Context, what: String): Long = sp(ctx).getLong("scad_$what", 0)
     fun setDeadline(ctx: Context, what: String, epochDay: Long) = sp(ctx).edit().putLong("scad_$what", epochDay).apply()
 
+    /** Tema del display dell'auto: "auto" (chiaro col sole, scuro di notte), "scuro" o "chiaro" */
+    val CAR_THEMES = listOf("auto", "scuro", "chiaro")
+    fun carTheme(ctx: Context): String = sp(ctx).getString("car_theme", "auto")!!
+    fun setCarTheme(ctx: Context, v: String) = sp(ctx).edit().putString("car_theme", v).apply()
+
     /** Ultime app aperte sul display dell'auto (componenti, la più recente prima) */
     fun recentApps(ctx: Context): List<String> = sp(ctx).getString("recent_apps", "")!!.split('\n').filter { it.isNotEmpty() }
     fun addRecentApp(ctx: Context, component: String) =
