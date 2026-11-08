@@ -40,6 +40,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import it.vincenzo.drivehub.features.DashcamService
 import it.vincenzo.drivehub.features.Parking
 import it.vincenzo.drivehub.features.Trips
@@ -178,17 +181,41 @@ fun DashcamSection() {
                 "sul display salva la clip in Movies/DriveHub. Se pubblichi un video, attenzione a targhe e volti.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(autoCam, { autoCam = it; Prefs.setAutoDashcam(ctx, it) })
-            Text("  Dashcam all'avvio in auto")
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(autoMusic, { autoMusic = it; Prefs.setAutoMusic(ctx, it) })
-            Text("  Riprendi la musica all'avvio in auto")
-        }
+        SwitchRow("Dashcam all'avvio in auto", autoCam) { autoCam = it; Prefs.setAutoDashcam(ctx, it) }
+        SwitchRow("Riprendi la musica all'avvio in auto", autoMusic) { autoMusic = it; Prefs.setAutoMusic(ctx, it) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { DashcamService.start(ctx); tick++ }, enabled = !running) { Text("Avvia dashcam") }
             OutlinedButton(onClick = { DashcamService.stop(ctx); tick++ }, enabled = running) { Text("Ferma") }
+        }
+    }
+}
+
+/** Interruttore con la sua scritta: si tocca tutta la riga e TalkBack legge il nome */
+@Composable
+private fun SwitchRow(label: String, on: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().toggleable(value = on, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Switch(on, onCheckedChange = null)
+        Text("  $label")
+    }
+}
+
+@Composable
+fun CarThemeSection() {
+    val ctx = LocalContext.current
+    var theme by remember { mutableStateOf(Prefs.carTheme(ctx)) }
+    Section("Colori del display dell'auto", Icons.Default.Star) {
+        Text(
+            "Automatico: chiaro di giorno, quando il sole sullo schermo rende difficile leggere, e scuro dall'imbrunire " +
+                "per non abbagliare. L'ora di alba e tramonto la calcola DriveHub dalla posizione, senza internet.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("auto" to "Automatico", "scuro" to "Scuro", "chiaro" to "Chiaro").forEach { (k, label) ->
+                FilterChip(theme == k, { theme = k; Prefs.setCarTheme(ctx, k) }, { Text(label) })
+            }
         }
     }
 }

@@ -31,17 +31,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-/** Colori fissi del display dell'auto (sempre scuro, per non abbagliare di notte) */
-object CarColors {
-    val bgTop = Color(0xFF0B1220)
-    val bgBottom = Color(0xFF131C2E)
-    val tile = Color(0x1AFFFFFF)
-    val text = Color(0xFFF1F4F9)
-    val muted = Color(0xFF9AA6BA)
-    val accent = Color(0xFF8AB4F8)
-    val warn = Color(0xFFFFC107)
-    val ok = Color(0xFF6DD58C)
-}
+/** Colori del display dell'auto */
+class CarPalette(
+    val bgTop: Color, val bgBottom: Color, val tile: Color, val text: Color,
+    val muted: Color, val accent: Color, val warn: Color, val ok: Color,
+)
+
+/** Scuro: di notte e in galleria, per non abbagliare */
+val CarColors = CarPalette(
+    bgTop = Color(0xFF0B1220), bgBottom = Color(0xFF131C2E), tile = Color(0x1AFFFFFF), text = Color(0xFFF1F4F9),
+    muted = Color(0xFF9AA6BA), accent = Color(0xFF8AB4F8), warn = Color(0xFFFFC107), ok = Color(0xFF6DD58C),
+)
+
+/** Chiaro: di giorno col sole sullo schermo; colori più scuri per restare leggibili sul fondo chiaro */
+val CarColorsLight = CarPalette(
+    bgTop = Color(0xFFF4F7FB), bgBottom = Color(0xFFE2E8F1), tile = Color(0x14000000), text = Color(0xFF0B1220),
+    muted = Color(0xFF475467), accent = Color(0xFF1A56C4), warn = Color(0xFF9A5B00), ok = Color(0xFF1B7A38),
+)
 
 private val BrandBlue = Color(0xFF1A73E8)
 

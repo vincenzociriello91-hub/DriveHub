@@ -208,6 +208,7 @@ private fun AutoTab(permTick: Int, askPermissions: () -> Unit, goTo: (Tab) -> Un
 
     ScreenSection(tick)
     DashcamSection()
+    CarThemeSection()
 }
 
 /** Intestazione: icona, nome, versione e stato di quello che serve in auto */
@@ -332,6 +333,7 @@ private fun ScreenSection(tick: Int) {
     val state = remember(tick) { shizukuState(ctx) }
     val screen by ScreenController.status.collectAsState()
     var passenger by remember { mutableStateOf(ScreenController.passengerMode) }
+    var askPassenger by remember { mutableStateOf(false) }
     LaunchedEffect(tick) { passenger = ScreenController.passengerMode } // si spegne da solo a fine viaggio
 
     DisposableEffect(Unit) {
@@ -379,8 +381,16 @@ private fun ScreenSection(tick: Int) {
                 Text("In movimento sblocca tutto tranne video e giochi. Si spegne a fine viaggio.",
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Switch(passenger, { passenger = it; ScreenController.setPassenger(it) })
+            // accendere chiede conferma, come sul display dell'auto; spegnere no
+            Switch(passenger, { if (it) askPassenger = true else { passenger = false; ScreenController.setPassenger(false) } })
         }
+        if (askPassenger) AlertDialog(
+            onDismissRequest = { askPassenger = false },
+            title = { Text("Modalità passeggero") },
+            text = { Text("Solo se a usare il display è un passeggero, non chi guida. Video e giochi restano bloccati in movimento; si spegne a fine viaggio.") },
+            confirmButton = { TextButton({ askPassenger = false; passenger = true; ScreenController.setPassenger(true) }) { Text("Attiva") } },
+            dismissButton = { TextButton({ askPassenger = false }) { Text("Annulla") } },
+        )
         Text("Sopra i 5 km/h l'immagine di video e app si copre, l'audio continua.",
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

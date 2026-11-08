@@ -12,8 +12,8 @@ android {
         applicationId = "it.vincenzo.drivehub"
         minSdk = 30
         targetSdk = 35
-        versionCode = 19
-        versionName = "3.8.4"
+        versionCode = 20
+        versionName = "3.9.0"
     }
 
     // Senza chiave (secret non impostati) l'APK di release esce non firmato: serve solo a verificare la build
@@ -48,7 +48,7 @@ android {
 
 dependencies {
     implementation("androidx.car.app:app:1.4.0")
-    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation(platform("androidx.compose:compose-bom:2024.10.01"))

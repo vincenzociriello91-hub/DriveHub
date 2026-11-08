@@ -59,6 +59,12 @@ import it.vincenzo.drivehub.features.DashcamService
 import it.vincenzo.drivehub.features.Refuels
 import it.vincenzo.drivehub.weather.Weather
 import it.vincenzo.drivehub.ui.CarColors
+import it.vincenzo.drivehub.ui.CarColorsLight
+import it.vincenzo.drivehub.core.SunTimes
+import android.location.Location
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -75,7 +81,7 @@ class LauncherActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Reports.log("Launcher auto aperto sul display ${display?.displayId}")
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme(primary = CarColors.accent)) { LauncherScreen(resumes.intValue) }
+            LauncherScreen(resumes.intValue)
         }
     }
 
@@ -89,55 +95,79 @@ class LauncherActivity : ComponentActivity() {
 
 private class AppEntry(val label: String, val component: ComponentName, val icon: ImageBitmap)
 
+/** Colori del display in uso (scuri o chiari) */
+private val LocalCar = staticCompositionLocalOf { CarColors }
+
+/** Tema scelto in Altro: "auto" segue il sole (chiaro di giorno, scuro dall'imbrunire) */
+internal fun carPalette(theme: String, day: Boolean) = when (theme) {
+    "chiaro" -> CarColorsLight
+    "scuro" -> CarColors
+    else -> if (day) CarColorsLight else CarColors
+}
+
 @Composable
 private fun LauncherScreen(resumes: Int) {
-    Column(
-        Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(CarColors.bgTop, CarColors.bgBottom)))
-    ) {
-        TopBar()
-        AppGrid(resumes)
+    val ctx = LocalContext.current
+    // una posizione ogni 20 minuti basta per meteo e alba/tramonto (meno GPS, meno batteria)
+    var loc by remember { mutableStateOf<Location?>(null) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            loc = withContext(Dispatchers.IO) { runCatching { Locator.current(ctx) }.getOrNull() } ?: loc
+            delay(20 * 60_000L)
+        }
+    }
+    var minute by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) { while (true) { delay(60_000); minute = System.currentTimeMillis() } }
+    val theme = remember(resumes) { Prefs.carTheme(ctx) }
+    val day = SunTimes.isDay(loc?.latitude ?: SunTimes.DEFAULT_LAT, loc?.longitude ?: SunTimes.DEFAULT_LON, minute)
+    val c = carPalette(theme, day)
+    val scheme = if (c === CarColors) darkColorScheme(primary = c.accent) else lightColorScheme(primary = c.accent)
+    MaterialTheme(colorScheme = scheme) {
+        CompositionLocalProvider(LocalCar provides c) {
+            Column(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(c.bgTop, c.bgBottom)))) {
+                TopBar(loc)
+                AppGrid(resumes)
+            }
+        }
     }
 }
 
 /** Ora, data, meteo, avviso attivo, autonomia, velocità e modalità passeggero */
 @Composable
-private fun TopBar() {
+private fun TopBar(loc: Location?) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(1000); now = System.currentTimeMillis() } }
     val speed = if (SpeedMonitor.known()) SpeedMonitor.kmh else null
     val ctx = LocalContext.current
     var weather by remember { mutableStateOf<String?>(null) }
     var range by remember { mutableStateOf<Double?>(null) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            weather = withContext(Dispatchers.IO) {
-                runCatching {
-                    Locator.current(ctx)?.let { val f = Weather.load(it.latitude, it.longitude); "${f.temp.toInt()}° ${Weather.describe(f.code)}" }
-                }.getOrNull()
-            } ?: weather
-            delay(20 * 60_000L)
-        }
+    LaunchedEffect(loc) {
+        val l = loc ?: return@LaunchedEffect
+        weather = withContext(Dispatchers.IO) {
+            runCatching { val f = Weather.load(l.latitude, l.longitude); "${f.temp.toInt()}° ${Weather.describe(f.code)}" }.getOrNull()
+        } ?: weather
     }
     LaunchedEffect(Unit) { while (true) { range = withContext(Dispatchers.IO) { Refuels.currentRangeKm(ctx) }; delay(60_000) } }
+    val c = LocalCar.current
     val alert = AlertMonitor.lastAlert?.takeIf { now - it.second < 10 * 60_000L }?.first
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date(now)), color = CarColors.text,
+        Text(SimpleDateFormat("HH:mm", Locale.ITALY).format(Date(now)), color = c.text,
             fontSize = 34.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(16.dp))
         // su schermi stretti (SYNC 2.5, 800x480) data e meteo si accorciano per lasciare posto alle pastiglie
         Text(SimpleDateFormat("EEEE d MMMM", Locale.ITALY).format(Date(now)).replaceFirstChar { it.uppercase() } +
             (weather?.let { " · $it" } ?: ""),
-            color = CarColors.muted, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            color = c.muted, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
         Spacer(Modifier.width(10.dp))
-        alert?.let { Pill(AlertRules.label(it), CarColors.warn); Spacer(Modifier.width(10.dp)) }
-        range?.let { Pill("${it.toInt()} km", CarColors.ok); Spacer(Modifier.width(10.dp)) }
-        if (ScreenController.passengerMode) Pill("Passeggero", CarColors.warn)
+        alert?.let { Pill(AlertRules.label(it), c.warn); Spacer(Modifier.width(10.dp)) }
+        range?.let { Pill("${it.toInt()} km", c.ok); Spacer(Modifier.width(10.dp)) }
+        if (ScreenController.passengerMode) Pill("Passeggero", c.warn)
         if (speed != null) {
             Spacer(Modifier.width(10.dp))
-            Pill("${speed.toInt()} km/h", CarColors.accent)
+            Pill("${speed.toInt()} km/h", c.accent)
         }
     }
 }
@@ -153,6 +183,7 @@ private fun Pill(text: String, color: Color) {
 @Composable
 private fun AppGrid(resumes: Int) {
     val ctx = LocalContext.current
+    val c = LocalCar.current
     var apps by remember { mutableStateOf<List<AppEntry>?>(null) }
     LaunchedEffect(Unit) { apps = withContext(Dispatchers.IO) { loadApps(ctx) } }
     val list = remember(apps, resumes) {
@@ -160,7 +191,7 @@ private fun AppGrid(resumes: Int) {
         apps?.sortedBy { a -> recent.indexOf(a.component.flattenToString()).let { if (it < 0) Int.MAX_VALUE else it } }
     }
     if (list == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Caricamento app…", color = CarColors.muted) }
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Caricamento app…", color = c.muted) }
         return
     }
     LazyVerticalGrid(
@@ -171,14 +202,14 @@ private fun AppGrid(resumes: Int) {
     ) {
         items(list, key = { it.component.flattenToString() }) { app ->
             Column(
-                Modifier.clip(RoundedCornerShape(24.dp)).background(CarColors.tile)
+                Modifier.clip(RoundedCornerShape(24.dp)).background(c.tile)
                     .clickable { ScreenController.launch(app.component) }
                     .padding(vertical = 14.dp, horizontal = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(app.icon, contentDescription = app.label, modifier = Modifier.size(60.dp))
                 Spacer(Modifier.size(8.dp))
-                Text(app.label, color = CarColors.text, fontSize = 14.sp, maxLines = 1,
+                Text(app.label, color = c.text, fontSize = 14.sp, maxLines = 1,
                     overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
             }
         }
